@@ -1,14 +1,14 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "@/screens/HomeScreen";
-import DetailScreen from "@/screens/DetailScreen";
+import VehicleDetailScreen from "@/screens/VehicleDetailScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
 import { useTheme } from "@/hooks/useTheme";
 import { getCommonScreenOptions } from "@/navigation/screenOptions";
 
 export type HomeStackParamList = {
   Home: undefined;
-  Detail: undefined;
+  VehicleDetail: { brand: string };
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -26,13 +26,15 @@ export default function HomeStackNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
-          headerTitle: () => <HeaderTitle title="My App" />,
+          headerTitle: () => <HeaderTitle title="VAG Diagnostics" />,
         }}
       />
       <Stack.Screen
-        name="Detail"
-        component={DetailScreen}
-        options={{ headerTitle: "Detail" }}
+        name="VehicleDetail"
+        component={VehicleDetailScreen}
+        options={({ route }) => ({
+          headerTitle: route.params.brand,
+        })}
       />
     </Stack.Navigator>
   );

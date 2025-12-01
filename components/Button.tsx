@@ -6,16 +6,18 @@ import Animated, {
   withSpring,
   WithSpringConfig,
 } from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
-import { useTheme } from "@/hooks/useTheme";
-import { BorderRadius, Spacing } from "@/constants/theme";
+import { BorderRadius, Spacing, Colors } from "@/constants/theme";
 
 interface ButtonProps {
   onPress?: () => void;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  variant?: "primary" | "secondary" | "destructive";
+  icon?: keyof typeof Feather.glyphMap;
 }
 
 const springConfig: WithSpringConfig = {
@@ -33,8 +35,9 @@ export function Button({
   children,
   style,
   disabled = false,
+  variant = "primary",
+  icon,
 }: ButtonProps) {
-  const { theme } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -43,7 +46,7 @@ export function Button({
 
   const handlePressIn = () => {
     if (!disabled) {
-      scale.value = withSpring(0.98, springConfig);
+      scale.value = withSpring(0.96, springConfig);
     }
   };
 
@@ -51,6 +54,28 @@ export function Button({
     if (!disabled) {
       scale.value = withSpring(1, springConfig);
     }
+  };
+
+  const getBackgroundColor = () => {
+    if (disabled) return Colors.dark.neutral;
+    switch (variant) {
+      case "secondary":
+        return "transparent";
+      case "destructive":
+        return Colors.dark.error;
+      default:
+        return Colors.dark.link;
+    }
+  };
+
+  const getBorderStyle = () => {
+    if (variant === "secondary") {
+      return {
+        borderWidth: 1,
+        borderColor: Colors.dark.link,
+      };
+    }
+    return {};
   };
 
   return (
@@ -62,16 +87,30 @@ export function Button({
       style={[
         styles.button,
         {
-          backgroundColor: theme.link,
+          backgroundColor: getBackgroundColor(),
           opacity: disabled ? 0.5 : 1,
         },
+        getBorderStyle(),
         style,
         animatedStyle,
       ]}
     >
+      {icon ? (
+        <Feather
+          name={icon}
+          size={20}
+          color={variant === "secondary" ? Colors.dark.link : Colors.dark.buttonText}
+          style={styles.icon}
+        />
+      ) : null}
       <ThemedText
         type="body"
-        style={[styles.buttonText, { color: theme.buttonText }]}
+        style={[
+          styles.buttonText,
+          {
+            color: variant === "secondary" ? Colors.dark.link : Colors.dark.buttonText,
+          },
+        ]}
       >
         {children}
       </ThemedText>
@@ -85,8 +124,13 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    paddingHorizontal: Spacing["2xl"],
   },
   buttonText: {
     fontWeight: "600",
+  },
+  icon: {
+    marginRight: Spacing.sm,
   },
 });

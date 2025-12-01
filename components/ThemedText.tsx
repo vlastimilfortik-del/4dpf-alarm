@@ -1,37 +1,35 @@
 import { Text, type TextProps } from "react-native";
 
-import { useTheme } from "@/hooks/useTheme";
-import { Typography } from "@/constants/theme";
+import { Typography, Colors } from "@/constants/theme";
 
 export type ThemedTextProps = TextProps & {
-  lightColor?: string;
-  darkColor?: string;
-  type?: "h1" | "h2" | "h3" | "h4" | "body" | "small" | "link";
+  type?: "h1" | "h2" | "h3" | "h4" | "body" | "small" | "caption" | "link" | "data";
+  color?: "primary" | "secondary" | "disabled" | "accent" | "success" | "warning" | "error";
 };
 
 export function ThemedText({
   style,
-  lightColor,
-  darkColor,
   type = "body",
+  color = "primary",
   ...rest
 }: ThemedTextProps) {
-  const { theme, isDark } = useTheme();
-
   const getColor = () => {
-    if (isDark && darkColor) {
-      return darkColor;
+    switch (color) {
+      case "secondary":
+        return Colors.dark.secondaryText;
+      case "disabled":
+        return Colors.dark.disabledText;
+      case "accent":
+        return Colors.dark.accent;
+      case "success":
+        return Colors.dark.success;
+      case "warning":
+        return Colors.dark.warning;
+      case "error":
+        return Colors.dark.error;
+      default:
+        return Colors.dark.text;
     }
-
-    if (!isDark && lightColor) {
-      return lightColor;
-    }
-
-    if (type === "link") {
-      return theme.link;
-    }
-
-    return theme.text;
   };
 
   const getTypeStyle = () => {
@@ -48,8 +46,12 @@ export function ThemedText({
         return Typography.body;
       case "small":
         return Typography.small;
+      case "caption":
+        return Typography.caption;
       case "link":
-        return Typography.link;
+        return { ...Typography.link, color: Colors.dark.link };
+      case "data":
+        return Typography.data;
       default:
         return Typography.body;
     }

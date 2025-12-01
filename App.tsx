@@ -8,26 +8,46 @@ import { StatusBar } from "expo-status-bar";
 
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Colors } from "@/constants/theme";
 
 export default function App() {
   return (
-  <ErrorBoundary>
-    <SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
         <GestureHandlerRootView style={styles.root}>
           <KeyboardProvider>
-            <NavigationContainer>
+            <NavigationContainer
+              theme={{
+                dark: true,
+                colors: {
+                  primary: Colors.dark.link,
+                  background: Colors.dark.backgroundRoot,
+                  card: Colors.dark.backgroundDefault,
+                  text: Colors.dark.text,
+                  border: Colors.dark.border,
+                  notification: Colors.dark.link,
+                },
+                fonts: {
+                  regular: { fontFamily: "System", fontWeight: "400" },
+                  medium: { fontFamily: "System", fontWeight: "500" },
+                  bold: { fontFamily: "System", fontWeight: "700" },
+                  heavy: { fontFamily: "System", fontWeight: "900" },
+                },
+              }}
+            >
               <MainTabNavigator />
             </NavigationContainer>
-            <StatusBar style="auto" />
+            <StatusBar style="light" />
           </KeyboardProvider>
         </GestureHandlerRootView>
       </SafeAreaProvider>
-  </ErrorBoundary>
+    </ErrorBoundary>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    backgroundColor: Colors.dark.backgroundRoot,
   },
 });

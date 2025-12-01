@@ -1,23 +1,21 @@
 import React from "react";
 import { FlatList, FlatListProps, StyleSheet } from "react-native";
 
-import { useTheme } from "@/hooks/useTheme";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
-import { Spacing } from "@/constants/theme";
+import { Spacing, Colors } from "@/constants/theme";
 
 export function ScreenFlatList<T>({
   contentContainerStyle,
   style,
   ...flatListProps
 }: FlatListProps<T>) {
-  const { theme } = useTheme();
   const { paddingTop, paddingBottom, scrollInsetBottom } = useScreenInsets();
 
   return (
     <FlatList
       style={[
         styles.container,
-        { backgroundColor: theme.backgroundRoot },
+        { backgroundColor: Colors.dark.backgroundRoot },
         style,
       ]}
       contentContainerStyle={[
