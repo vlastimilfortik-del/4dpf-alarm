@@ -16,6 +16,7 @@ import { Button } from "@/components/Button";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 import { storage, DPFHistoryEntry } from "@/utils/storage";
 import { getVehicleBrand } from "@/constants/vehicles";
+import { playNotificationSound } from "@/utils/sound";
 
 type RegenerationStatus = "idle" | "running" | "completed" | "stopped";
 
@@ -59,6 +60,10 @@ export default function DiagnosticsScreen() {
   );
 
   const triggerHaptic = useCallback((milestone: number) => {
+    if (milestone === 50) {
+      playNotificationSound("progress");
+    }
+    
     if (Platform.OS !== "web") {
       try {
         Haptics.impactAsync(
@@ -99,6 +104,8 @@ export default function DiagnosticsScreen() {
     
     await saveHistoryEntry(entry);
     
+    playNotificationSound("complete");
+    
     if (Platform.OS !== "web") {
       try {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -137,6 +144,8 @@ export default function DiagnosticsScreen() {
     startTimeRef.current = Date.now();
     setTemperature(200);
     
+    playNotificationSound("start");
+    
     if (Platform.OS !== "web") {
       try {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -158,6 +167,8 @@ export default function DiagnosticsScreen() {
     
     const finalProgress = progress.value;
     setStatus("stopped");
+    
+    playNotificationSound("error");
     
     if (Platform.OS !== "web") {
       try {

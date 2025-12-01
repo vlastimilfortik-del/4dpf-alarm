@@ -166,6 +166,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             value={dpfStatus.value}
             icon="filter"
             status={dpfStatus.status}
+            onPress={() => navigation.navigate("LiveData")}
           />
           <View style={styles.statusSpacer} />
           <StatusCard
@@ -173,6 +174,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             value={getLastRegenTime()}
             icon="clock"
             status="normal"
+            onPress={() => navigation.navigate("History")}
           />
           <View style={styles.statusSpacer} />
           <StatusCard

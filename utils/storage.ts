@@ -113,6 +113,14 @@ export const storage = {
     }
   },
 
+  async clearDPFHistory(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEYS.DPF_HISTORY);
+    } catch (error) {
+      console.error("Failed to clear DPF history:", error);
+    }
+  },
+
   async getBluetoothDevices(): Promise<BluetoothDevice[]> {
     try {
       const value = await AsyncStorage.getItem(STORAGE_KEYS.BLUETOOTH_DEVICES);
