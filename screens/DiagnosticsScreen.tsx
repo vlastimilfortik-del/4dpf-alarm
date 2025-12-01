@@ -246,13 +246,13 @@ export default function DiagnosticsScreen() {
   const getStatusText = () => {
     switch (status) {
       case "running":
-        return "REGENERACE AKTIVN\u00CD";
+        return "REGENERACE AKTIVNÍ";
       case "completed":
-        return "REGENERACE DOKON\u010CENA";
+        return "REGENERACE DOKONČENA";
       case "stopped":
         return "REGENERACE ZASTAVENA";
       default:
-        return selectedVehicle ? "P\u0158IPRAVENO" : "VYBERTE VOZIDLO";
+        return selectedVehicle ? "PŘIPRAVENO" : "VYBERTE VOZIDLO";
     }
   };
 
@@ -337,7 +337,7 @@ export default function DiagnosticsScreen() {
           </Button>
         ) : (
           <Button onPress={resetRegeneration} variant="secondary" icon="refresh-cw">
-            NOV{"\u00C1"} REGENERACE
+            NOVÁ REGENERACE
           </Button>
         )}
       </View>

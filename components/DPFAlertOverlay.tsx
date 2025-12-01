@@ -28,8 +28,8 @@ export function DPFAlertOverlay({ visible, onDismiss }: DPFAlertOverlayProps) {
     if (visible) {
       opacity.value = withRepeat(
         withSequence(
-          withTiming(0.3, { duration: 500 }),
-          withTiming(1, { duration: 500 })
+          withTiming(0.4, { duration: 800 }),
+          withTiming(1, { duration: 800 })
         ),
         -1,
         false
@@ -54,10 +54,10 @@ export function DPFAlertOverlay({ visible, onDismiss }: DPFAlertOverlayProps) {
         </View>
         <View style={styles.textContainer}>
           <ThemedText type="h4" style={styles.title}>
-            AKTIVN{"\u00CD"} REGENERACE DPF
+            AKTIVNÍ REGENERACE DPF
           </ThemedText>
           <ThemedText type="small" style={styles.subtitle}>
-            NEVYP{"\u00CD"}NEJTE MOTOR
+            NEVYPÍNEJTE MOTOR
           </ThemedText>
         </View>
         {onDismiss ? (
@@ -73,7 +73,7 @@ export function DPFAlertOverlay({ visible, onDismiss }: DPFAlertOverlayProps) {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 50 : 30,
+    top: Platform.OS === "ios" ? 120 : 100,
     left: Spacing.lg,
     right: Spacing.lg,
     zIndex: 1000,

@@ -31,10 +31,13 @@ type HomeScreenProps = {
   navigation: HomeScreenNavigationProp;
 };
 
-const BRANDS = [
+const BRANDS_ROW1 = [
   { id: "vw", name: "VW" },
   { id: "audi", name: "Audi" },
-  { id: "skoda", name: "\u0160koda" },
+  { id: "skoda", name: "Škoda" },
+];
+
+const BRANDS_ROW2 = [
   { id: "seat", name: "Seat" },
   { id: "cupra", name: "Cupra" },
 ];
@@ -48,7 +51,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState("\u017D\u00C1DN\u00C1 DATA");
+  const [currentStatus, setCurrentStatus] = useState("ŽÁDNÁ DATA");
   
   const monitoringIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isRegeneratingRef = useRef(false);
@@ -104,7 +107,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     isRegeneratingRef.current = true;
     setIsRegenerating(true);
     setShowAlert(true);
-    setCurrentStatus("REGENERACE AKTIVN\u00CD");
+    setCurrentStatus("REGENERACE AKTIVNÍ");
     
     if (!soundPlayedRef.current) {
       playDPFAlertSound();
@@ -124,7 +127,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       soundPlayedRef.current = false;
       setIsRegenerating(false);
       setShowAlert(false);
-      setCurrentStatus("REGENERACE DOKON\u010CENA");
+      setCurrentStatus("REGENERACE DOKONČENA");
       
       if (Platform.OS !== "web") {
         try {
@@ -139,7 +142,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const startMonitoring = useCallback(() => {
     setIsMonitoring(true);
     setIsConnected(true);
-    setCurrentStatus("MONITOROV\u00C1N\u00CD...");
+    setCurrentStatus("MONITOROVÁNÍ...");
     soundPlayedRef.current = false;
     
     if (Platform.OS !== "web") {
@@ -162,7 +165,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     cleanupAll();
     setIsMonitoring(false);
     setIsConnected(false);
-    setCurrentStatus("\u017D\u00C1DN\u00C1 DATA");
+    setCurrentStatus("ŽÁDNÁ DATA");
     
     if (Platform.OS !== "web") {
       try {
@@ -228,7 +231,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           <Image source={appIcon} style={styles.appIcon} contentFit="contain" />
           <View style={styles.headerTextContainer}>
             <ThemedText type="h4" style={styles.appTitle}>
-              Alarm DPF
+              VAG Diagnostics
             </ThemedText>
             <View style={styles.connectionStatus}>
               <View
@@ -238,7 +241,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 ]}
               />
               <ThemedText type="caption" color="secondary">
-                {isConnected ? "P\u0158IPOJENO" : "ODPOJENO"}
+                {isConnected ? "PŘIPOJENO" : "ODPOJENO"}
               </ThemedText>
             </View>
           </View>
@@ -253,12 +256,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
       <View style={styles.content}>
         <ThemedText type="caption" color="secondary" style={styles.sectionLabel}>
-          ZNA\u010CKA VOZIDLA
+          ZNAČKA VOZIDLA
         </ThemedText>
         
         <View style={styles.brandsContainer}>
           <View style={styles.brandRow}>
-            {BRANDS.slice(0, 3).map((brand) => (
+            {BRANDS_ROW1.map((brand) => (
               <BrandButton
                 key={brand.id}
                 name={brand.name}
@@ -267,8 +270,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               />
             ))}
           </View>
-          <View style={styles.brandRowBottom}>
-            {BRANDS.slice(3).map((brand) => (
+          <View style={styles.brandRowCentered}>
+            {BRANDS_ROW2.map((brand) => (
               <BrandButton
                 key={brand.id}
                 name={brand.name}
@@ -288,7 +291,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             />
           </View>
           <ThemedText type="caption" color="secondary" style={styles.statusLabel}>
-            AKTU\u00C1LN\u00CD STAV
+            AKTUÁLNÍ STAV
           </ThemedText>
           <ThemedText
             type="h2"
@@ -307,7 +310,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           icon={isMonitoring ? "pause" : "power"}
           style={styles.mainButton}
         >
-          {isMonitoring ? "ZASTAVIT MONITOROV\u00C1N\u00CD" : "SPUSTIT MONITOROV\u00C1N\u00CD"}
+          {isMonitoring ? "ZASTAVIT MONITOROVÁNÍ" : "SPUSTIT MONITOROVÁNÍ"}
         </Button>
 
         <View style={styles.testButtonsRow}>
@@ -320,7 +323,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           >
             <Feather name="layers" size={18} color={Colors.dark.secondaryText} />
             <ThemedText type="small" color="secondary" style={styles.testButtonText}>
-              Test p\u0159ekryvu
+              Test překryvu
             </ThemedText>
           </Pressable>
           
@@ -333,7 +336,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           >
             <Feather name="volume-2" size={18} color={Colors.dark.secondaryText} />
             <ThemedText type="small" color="secondary" style={styles.testButtonText}>
-              Testovac\u00ED zvuk
+              Testovací zvuk
             </ThemedText>
           </Pressable>
         </View>
@@ -396,13 +399,13 @@ const styles = StyleSheet.create({
   },
   brandRow: {
     flexDirection: "row",
-    gap: Spacing.sm,
+    justifyContent: "space-between",
     marginBottom: Spacing.sm,
   },
-  brandRowBottom: {
+  brandRowCentered: {
     flexDirection: "row",
+    justifyContent: "center",
     gap: Spacing.sm,
-    paddingRight: "33%",
   },
   statusContainer: {
     alignItems: "center",

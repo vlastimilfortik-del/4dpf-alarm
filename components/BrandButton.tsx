@@ -45,7 +45,7 @@ export function BrandButton({ name, isSelected, onPress }: BrandButtonProps) {
 
 const styles = StyleSheet.create({
   button: {
-    flex: 1,
+    width: 100,
     height: 44,
     justifyContent: "center",
     alignItems: "center",
