@@ -85,8 +85,11 @@ npm run dev   # Start Expo development server
 - Added custom app icon (blue 4 with DPF)
 - Implemented blinking red alert overlay
 - Added custom MP3 sound for alerts
-- Czech localization for all UI elements
+- Czech localization for all UI elements with proper diacritics
 - Brand buttons in 2-row layout (3+2)
+- Fixed stale closure bugs using refs (isRegeneratingRef, soundPlayedRef)
+- Proper cleanup on unmount and navigation
+- Sound plays only once per regeneration session
 
 ## Technical Notes
 - Uses React Navigation 7 for navigation
