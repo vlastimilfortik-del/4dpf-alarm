@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { View, StyleSheet, Pressable, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useSharedValue,
   runOnJS,
@@ -13,21 +12,22 @@ import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
 import { CircularProgress } from "@/components/CircularProgress";
 import { Button } from "@/components/Button";
+import { DPFAlertOverlay } from "@/components/DPFAlertOverlay";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 import { storage, DPFHistoryEntry } from "@/utils/storage";
 import { getVehicleBrand } from "@/constants/vehicles";
-import { playNotificationSound } from "@/utils/sound";
+import { playDPFAlertSound } from "@/utils/sound";
 
 type RegenerationStatus = "idle" | "running" | "completed" | "stopped";
 
 export default function DiagnosticsScreen() {
-  const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   
   const [status, setStatus] = useState<RegenerationStatus>("idle");
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [temperature, setTemperature] = useState(200);
+  const [showAlert, setShowAlert] = useState(false);
   
   const progress = useSharedValue(0);
   const startTimeRef = useRef<number>(0);
@@ -60,10 +60,6 @@ export default function DiagnosticsScreen() {
   );
 
   const triggerHaptic = useCallback((milestone: number) => {
-    if (milestone === 50) {
-      playNotificationSound("progress");
-    }
-    
     if (Platform.OS !== "web") {
       try {
         Haptics.impactAsync(
@@ -92,6 +88,7 @@ export default function DiagnosticsScreen() {
     }
     
     setStatus("completed");
+    setShowAlert(false);
     
     const entry: DPFHistoryEntry = {
       id: Date.now().toString(),
@@ -103,8 +100,6 @@ export default function DiagnosticsScreen() {
     };
     
     await saveHistoryEntry(entry);
-    
-    playNotificationSound("complete");
     
     if (Platform.OS !== "web") {
       try {
@@ -139,16 +134,17 @@ export default function DiagnosticsScreen() {
     if (!selectedVehicle) return;
     
     setStatus("running");
+    setShowAlert(true);
     progress.value = 0;
     lastHapticRef.current = 0;
     startTimeRef.current = Date.now();
     setTemperature(200);
     
-    playNotificationSound("start");
+    playDPFAlertSound();
     
     if (Platform.OS !== "web") {
       try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       } catch (error) {
         console.log("Haptics not available");
       }
@@ -167,8 +163,7 @@ export default function DiagnosticsScreen() {
     
     const finalProgress = progress.value;
     setStatus("stopped");
-    
-    playNotificationSound("error");
+    setShowAlert(false);
     
     if (Platform.OS !== "web") {
       try {
@@ -198,6 +193,7 @@ export default function DiagnosticsScreen() {
 
   const resetRegeneration = useCallback(() => {
     setStatus("idle");
+    setShowAlert(false);
     progress.value = 0;
     setTemperature(200);
     lastHapticRef.current = 0;
@@ -243,18 +239,20 @@ export default function DiagnosticsScreen() {
     ? Colors.dark.success 
     : status === "stopped" 
     ? Colors.dark.error 
-    : vehicleBrand?.color || Colors.dark.link;
+    : status === "running"
+    ? Colors.dark.alertRed
+    : Colors.dark.primary;
 
   const getStatusText = () => {
     switch (status) {
       case "running":
-        return "Regeneration in Progress...";
+        return "REGENERACE AKTIVN\u00CD";
       case "completed":
-        return "Regeneration Complete!";
+        return "REGENERACE DOKON\u010CENA";
       case "stopped":
-        return "Regeneration Stopped";
+        return "REGENERACE ZASTAVENA";
       default:
-        return selectedVehicle ? "Ready to Start" : "Select a Vehicle First";
+        return selectedVehicle ? "P\u0158IPRAVENO" : "VYBERTE VOZIDLO";
     }
   };
 
@@ -268,6 +266,11 @@ export default function DiagnosticsScreen() {
         },
       ]}
     >
+      <DPFAlertOverlay 
+        visible={showAlert} 
+        onDismiss={() => setShowAlert(false)} 
+      />
+
       <Pressable
         onPress={toggleSound}
         style={({ pressed }) => [
@@ -278,15 +281,15 @@ export default function DiagnosticsScreen() {
         <Feather
           name={soundEnabled ? "volume-2" : "volume-x"}
           size={24}
-          color={soundEnabled ? Colors.dark.link : Colors.dark.neutral}
+          color={soundEnabled ? Colors.dark.primary : Colors.dark.neutral}
         />
       </Pressable>
 
       <View style={styles.content}>
         {vehicleBrand ? (
-          <View style={[styles.vehicleBadge, { backgroundColor: vehicleBrand.color + "20" }]}>
-            <Feather name="truck" size={16} color={vehicleBrand.color} />
-            <ThemedText type="small" style={{ color: vehicleBrand.color, marginLeft: Spacing.xs }}>
+          <View style={[styles.vehicleBadge, { backgroundColor: Colors.dark.primary + "20" }]}>
+            <Feather name="truck" size={16} color={Colors.dark.primary} />
+            <ThemedText type="small" style={{ color: Colors.dark.primary, marginLeft: Spacing.xs }}>
               {vehicleBrand.name}
             </ThemedText>
           </View>
@@ -297,7 +300,7 @@ export default function DiagnosticsScreen() {
           size={220}
           strokeWidth={12}
           progressColor={progressColor}
-          backgroundColor={Colors.dark.backgroundDefault}
+          backgroundColor={Colors.dark.cardBackground}
         />
 
         <View style={styles.temperatureContainer}>
@@ -312,7 +315,7 @@ export default function DiagnosticsScreen() {
 
         <ThemedText
           type="body"
-          color={status === "completed" ? "success" : status === "stopped" ? "error" : "secondary"}
+          color={status === "completed" ? "success" : status === "stopped" ? "error" : status === "running" ? "error" : "secondary"}
           style={styles.statusText}
         >
           {getStatusText()}
@@ -326,15 +329,15 @@ export default function DiagnosticsScreen() {
             disabled={!selectedVehicle}
             icon="play"
           >
-            Start Regeneration
+            SPUSTIT REGENERACI
           </Button>
         ) : status === "running" ? (
           <Button onPress={stopRegeneration} variant="destructive" icon="square">
-            Stop Regeneration
+            ZASTAVIT REGENERACI
           </Button>
         ) : (
           <Button onPress={resetRegeneration} variant="secondary" icon="refresh-cw">
-            New Regeneration
+            NOV{"\u00C1"} REGENERACE
           </Button>
         )}
       </View>
@@ -383,6 +386,7 @@ const styles = StyleSheet.create({
   statusText: {
     marginTop: Spacing.lg,
     textAlign: "center",
+    letterSpacing: 1,
   },
   buttonContainer: {
     paddingBottom: Spacing.xl,

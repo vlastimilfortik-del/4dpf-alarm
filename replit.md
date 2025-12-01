@@ -1,12 +1,13 @@
-# VAG Diagnostics - React Native Mobile App
+# 4 DPF Alarm - React Native Mobile App
 
 ## Overview
-VAG Diagnostics is a mobile diagnostic application for VAG group vehicles (Volkswagen, Audi, Skoda, Seat, Cupra) focused on DPF (Diesel Particulate Filter) regeneration monitoring and Bluetooth OBD-II connectivity.
+4 DPF Alarm is a mobile diagnostic application for VAG group vehicles (Volkswagen, Audi, Skoda, Seat, Cupra) focused on DPF (Diesel Particulate Filter) regeneration monitoring with Bluetooth OBD-II connectivity.
 
 ## Current State
 - **Version**: 1.0.0
 - **Platform**: React Native with Expo SDK 54
-- **Design**: Dark theme with blue accents following iOS 26 liquid glass design principles
+- **Design**: Dark gray theme with cyan/blue accents
+- **Language**: Czech UI
 
 ## Project Architecture
 
@@ -14,55 +15,54 @@ VAG Diagnostics is a mobile diagnostic application for VAG group vehicles (Volks
 ```
 /
 ├── App.tsx                    # Root component with navigation and error boundary
-├── app.json                   # Expo configuration
+├── app.json                   # Expo configuration (app name: 4 DPF Alarm)
 ├── navigation/
-│   ├── MainTabNavigator.tsx   # Bottom tab navigation (3 tabs)
+│   ├── MainTabNavigator.tsx   # Bottom tab navigation
 │   ├── HomeStackNavigator.tsx # Home tab stack
 │   ├── DiagnosticsStackNavigator.tsx # Diagnostics tab stack
-│   ├── SettingsStackNavigator.tsx # Settings tab stack
-│   └── screenOptions.ts       # Shared screen options
+│   └── SettingsStackNavigator.tsx # Settings tab stack
 ├── screens/
-│   ├── HomeScreen.tsx         # Vehicle selection and status dashboard
-│   ├── DiagnosticsScreen.tsx  # DPF regeneration simulator
-│   ├── SettingsScreen.tsx     # User preferences and settings
-│   ├── BluetoothPairingScreen.tsx # Bluetooth device pairing
-│   └── VehicleDetailScreen.tsx # Vehicle history details
+│   ├── HomeScreen.tsx         # Main screen with brand selection, monitoring
+│   ├── DiagnosticsScreen.tsx  # DPF regeneration simulation
+│   └── SettingsScreen.tsx     # User preferences
 ├── components/
+│   ├── BrandButton.tsx        # Vehicle brand selection button
 │   ├── Button.tsx             # Primary button component
 │   ├── Card.tsx               # Card container with elevation
-│   ├── CircularProgress.tsx   # Animated circular progress indicator
-│   ├── FloatingActionButton.tsx # FAB for quick actions
-│   ├── StatusCard.tsx         # Status display card
-│   ├── VehicleBrandCard.tsx   # Vehicle brand selection card
+│   ├── CircularProgress.tsx   # Animated circular progress
+│   ├── DPFAlertOverlay.tsx    # Blinking red regeneration alert
 │   ├── ErrorBoundary.tsx      # Error boundary wrapper
-│   ├── ErrorFallback.tsx      # Error fallback UI
-│   └── Screen*.tsx            # Safe area scroll view helpers
+│   └── Screen*.tsx            # Safe area helpers
 ├── constants/
-│   ├── theme.ts               # Design tokens (colors, spacing, typography)
-│   └── vehicles.ts            # Vehicle brand definitions
+│   └── theme.ts               # Design tokens (colors, spacing)
 ├── utils/
-│   └── storage.ts             # AsyncStorage persistence layer
-└── hooks/
-    ├── useTheme.ts            # Theme hook (dark mode)
-    └── useScreenInsets.ts     # Safe area insets helper
+│   ├── storage.ts             # AsyncStorage persistence
+│   └── sound.ts               # DPF alert sound (MP3)
+└── assets/
+    ├── images/icon.png        # App icon (blue 4 with DPF)
+    └── sounds/dpf_alert.mp3   # Alert sound file
 ```
 
 ### Key Features
-1. **Vehicle Selection**: Choose from 5 VAG brands with visual selection
-2. **DPF Regeneration**: Animated progress with temperature monitoring
-3. **Haptic Feedback**: Tactile feedback at milestones (25%, 50%, 75%, 100%)
-4. **Sound Notifications**: Configurable audio alerts
-5. **Bluetooth Pairing**: OBD-II adapter connection (mock UI on web)
-6. **Data Persistence**: AsyncStorage for settings and history
-7. **Error Boundary**: Graceful crash recovery
+1. **Vehicle Selection**: 5 VAG brands in 2 rows (3+2 layout)
+2. **DPF Monitoring**: Simulated OBD-II connection monitoring
+3. **Regeneration Alert**: Red blinking overlay with "AKTIVNI REGENERACE DPF"
+4. **Sound Alert**: MP3 plays once at regeneration start
+5. **Haptic Feedback**: Vibration at key moments
+6. **Czech Localization**: All UI text in Czech
 
 ### Design System
-- **Background Colors**: #0A0E1A (root), #141B2D (cards)
-- **Primary Blue**: #2E7FFF
-- **Accent Cyan**: #00B4FF
-- **Success Green**: #00C853
-- **Warning Yellow**: #FFB300
-- **Error Red**: #FF3B30
+- **Background**: #1A1A1A (dark gray)
+- **Cards**: #2D2D2D with #4A4A4A border
+- **Primary (buttons)**: #2DBADE (cyan blue)
+- **Alert Red**: #E53935
+- **Text**: #FFFFFF (primary), #9A9A9A (secondary)
+
+### Alert Overlay Behavior
+- Shows blinking red rectangle during regeneration
+- Text: "AKTIVNI REGENERACE DPF" / "NEVYPINEJTE MOTOR"
+- Sound plays ONCE at start
+- Overlay blinks throughout regeneration
 
 ## Running the App
 
@@ -76,19 +76,21 @@ npm run dev   # Start Expo development server
 - **Mobile**: Scan QR code with Expo Go app
 
 ## User Preferences
-- Dark theme is enforced across the entire app
-- Sound notifications are enabled by default
-- Haptic feedback is used for key interactions
+- Dark theme enforced
+- Sound notifications enabled by default
+- Haptic feedback for interactions
 
 ## Recent Changes
-- Initial MVP implementation with all core screens
-- AsyncStorage persistence for all settings
-- Consistent haptic feedback across interactions
-- Platform-specific handling for web vs native
+- Complete UI redesign to match provided mockups
+- Added custom app icon (blue 4 with DPF)
+- Implemented blinking red alert overlay
+- Added custom MP3 sound for alerts
+- Czech localization for all UI elements
+- Brand buttons in 2-row layout (3+2)
 
 ## Technical Notes
 - Uses React Navigation 7 for navigation
-- Reanimated 3 for animations
+- Reanimated 3 for animations (blinking effect)
+- expo-audio for MP3 playback
 - expo-haptics for tactile feedback
-- react-native-svg for circular progress
-- AsyncStorage for local data persistence
+- AsyncStorage for local persistence

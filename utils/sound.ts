@@ -2,45 +2,19 @@ import { createAudioPlayer, AudioPlayer, setAudioModeAsync } from "expo-audio";
 import { Platform } from "react-native";
 import { storage } from "./storage";
 
-export type SoundType = "start" | "progress" | "complete" | "error";
+export type SoundType = "dpfAlert";
 
 const SOUND_ASSETS = {
-  start: require("@/assets/sounds/start.wav"),
-  progress: require("@/assets/sounds/progress.wav"),
-  complete: require("@/assets/sounds/complete.wav"),
-  error: require("@/assets/sounds/error.wav"),
+  dpfAlert: require("@/assets/sounds/dpf_alert.mp3"),
 };
 
-const SOUND_CONFIG = {
-  start: { frequency: 440, duration: 200 },
-  progress: { frequency: 660, duration: 100 },
-  complete: { frequency: 880, duration: 300 },
-  error: { frequency: 220, duration: 400 },
-};
+let lastPlayTime = 0;
+const COOLDOWN_MS = 1000;
 
-let lastPlayTime: Record<SoundType, number> = {
-  start: 0,
-  progress: 0,
-  complete: 0,
-  error: 0,
-};
-
-const COOLDOWN_MS: Record<SoundType, number> = {
-  start: 500,
-  progress: 2000,
-  complete: 500,
-  error: 500,
-};
-
-let audioPlayers: Record<SoundType, AudioPlayer | null> = {
-  start: null,
-  progress: null,
-  complete: null,
-  error: null,
-};
-
+let audioPlayer: AudioPlayer | null = null;
 let isAudioInitialized = false;
 let webAudioContext: AudioContext | null = null;
+let webAudioBuffer: AudioBuffer | null = null;
 
 async function initializeAudio(): Promise<void> {
   if (isAudioInitialized || Platform.OS === "web") return;
@@ -48,8 +22,6 @@ async function initializeAudio(): Promise<void> {
   try {
     await setAudioModeAsync({
       playsInSilentMode: true,
-      shouldDuckAndroid: true,
-      shouldRouteThroughEarpiece: false,
     });
     isAudioInitialized = true;
   } catch (error) {
@@ -76,26 +48,26 @@ function getWebAudioContext(): AudioContext | null {
   return webAudioContext;
 }
 
-async function getPlayer(type: SoundType): Promise<AudioPlayer | null> {
+async function getPlayer(): Promise<AudioPlayer | null> {
   if (Platform.OS === "web") {
     return null;
   }
   
   try {
-    if (!audioPlayers[type]) {
+    if (!audioPlayer) {
       await initializeAudio();
-      audioPlayers[type] = createAudioPlayer(SOUND_ASSETS[type]);
+      audioPlayer = createAudioPlayer(SOUND_ASSETS.dpfAlert);
     }
-    return audioPlayers[type];
+    return audioPlayer;
   } catch (error) {
-    console.error(`Failed to create audio player for ${type}:`, error);
+    console.error("Failed to create audio player:", error);
     return null;
   }
 }
 
-export async function playNotificationSound(type: SoundType): Promise<void> {
+export async function playDPFAlertSound(): Promise<void> {
   if (Platform.OS === "web") {
-    playWebSound(type);
+    playWebAlertSound();
     return;
   }
 
@@ -104,28 +76,28 @@ export async function playNotificationSound(type: SoundType): Promise<void> {
     if (!soundEnabled) return;
 
     const now = Date.now();
-    if (now - lastPlayTime[type] < COOLDOWN_MS[type]) {
+    if (now - lastPlayTime < COOLDOWN_MS) {
       return;
     }
-    lastPlayTime[type] = now;
+    lastPlayTime = now;
 
-    const player = await getPlayer(type);
+    const player = await getPlayer();
     if (player) {
       player.seekTo(0);
       player.play();
-      console.log(`[Sound] Playing ${type} notification`);
+      console.log("[Sound] Playing DPF alert notification");
     }
   } catch (error) {
     console.error("Failed to play sound:", error);
   }
 }
 
-function playWebSound(type: SoundType): void {
+function playWebAlertSound(): void {
   const now = Date.now();
-  if (now - lastPlayTime[type] < COOLDOWN_MS[type]) {
+  if (now - lastPlayTime < COOLDOWN_MS) {
     return;
   }
-  lastPlayTime[type] = now;
+  lastPlayTime = now;
 
   storage.getSoundEnabled().then((enabled) => {
     if (!enabled) return;
@@ -137,24 +109,32 @@ function playWebSound(type: SoundType): void {
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
-      const config = SOUND_CONFIG[type];
-
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
 
-      oscillator.frequency.value = config.frequency;
-      oscillator.type = type === "error" ? "sawtooth" : "sine";
+      oscillator.frequency.value = 880;
+      oscillator.type = "sine";
 
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.01,
-        audioContext.currentTime + config.duration / 1000
-      );
+      gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
 
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + config.duration / 1000);
+      oscillator.stop(audioContext.currentTime + 0.8);
 
-      console.log(`[Sound] Playing ${type} notification on web`);
+      setTimeout(() => {
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        osc2.frequency.value = 1100;
+        osc2.type = "sine";
+        gain2.gain.setValueAtTime(0.4, audioContext.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        osc2.start(audioContext.currentTime);
+        osc2.stop(audioContext.currentTime + 0.5);
+      }, 300);
+
+      console.log("[Sound] Playing DPF alert on web");
     } catch (error) {
       console.error("Web audio error:", error);
     }
@@ -163,12 +143,9 @@ function playWebSound(type: SoundType): void {
 
 export async function cleanupSounds(): Promise<void> {
   try {
-    for (const type of Object.keys(audioPlayers) as SoundType[]) {
-      const player = audioPlayers[type];
-      if (player) {
-        player.release();
-        audioPlayers[type] = null;
-      }
+    if (audioPlayer) {
+      audioPlayer.release();
+      audioPlayer = null;
     }
     isAudioInitialized = false;
     
@@ -176,6 +153,7 @@ export async function cleanupSounds(): Promise<void> {
       webAudioContext.close();
       webAudioContext = null;
     }
+    webAudioBuffer = null;
   } catch (error) {
     console.error("Failed to cleanup sounds:", error);
   }
