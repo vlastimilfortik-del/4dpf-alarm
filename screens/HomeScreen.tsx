@@ -212,7 +212,13 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.content}>
-        <Card elevation={1} style={styles.statusCard}>
+        <Card 
+          elevation={1} 
+          style={[
+            styles.statusCard,
+            isConnected ? { backgroundColor: Colors.dark.primary } : null
+          ]}
+        >
           <Pressable
             onPress={handleBluetoothPress}
             style={({ pressed }) => [
@@ -223,17 +229,25 @@ export default function HomeScreen() {
             <Feather 
               name="bluetooth" 
               size={20} 
-              color={isConnected ? "#00A3FF" : "#808080"}
+              color={isConnected ? Colors.dark.text : Colors.dark.secondaryText}
               style={styles.bluetoothIcon}
             />
             <ThemedText 
               type="body" 
-              style={styles.statusTitle}
-              color={isConnected ? "accent" : "secondary"}
+              style={[
+                styles.statusTitle,
+                isConnected ? { color: Colors.dark.text } : { color: Colors.dark.secondaryText }
+              ]}
             >
               {isConnected ? "PŘIPOJENO" : "ODPOJENO"}
             </ThemedText>
-            <ThemedText type="small" color="secondary" style={styles.statusSubtitle}>
+            <ThemedText 
+              type="small" 
+              style={[
+                styles.statusSubtitle,
+                isConnected ? { color: "rgba(255,255,255,0.8)" } : { color: Colors.dark.secondaryText }
+              ]}
+            >
               {isMonitoring ? "Monitorování aktivní" : "OBD-II adaptér"}
             </ThemedText>
           </Pressable>
