@@ -223,15 +223,13 @@ export default function HomeScreen() {
             <Feather 
               name="bluetooth" 
               size={20} 
-              color={isConnected ? Colors.dark.link : Colors.dark.secondaryText}
+              color={isConnected ? "#00A3FF" : "#808080"}
               style={styles.bluetoothIcon}
             />
             <ThemedText 
               type="body" 
-              style={[
-                styles.statusTitle,
-                { color: isConnected ? Colors.dark.link : Colors.dark.secondaryText }
-              ]}
+              style={styles.statusTitle}
+              color={isConnected ? "accent" : "secondary"}
             >
               {isConnected ? "PŘIPOJENO" : "ODPOJENO"}
             </ThemedText>
