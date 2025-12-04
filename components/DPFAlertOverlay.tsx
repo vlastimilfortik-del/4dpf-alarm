@@ -51,17 +51,14 @@ export function DPFAlertOverlay({ visible, onDismiss }: DPFAlertOverlayProps) {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Animated.View style={[styles.alertBox, animatedStyle]}>
         <View style={styles.iconContainer}>
-          <Feather name="alert-triangle" size={64} color={Colors.dark.text} />
+          <Feather name="alert-triangle" size={40} color={Colors.dark.text} />
         </View>
-        <ThemedText type="h2" style={styles.title}>
+        <ThemedText type="h3" style={styles.title}>
           AKTIVNÍ REGENERACE DPF
         </ThemedText>
         <View style={styles.divider} />
-        <ThemedText type="h4" style={styles.subtitle}>
+        <ThemedText type="body" style={styles.subtitle}>
           NEVYPÍNEJTE MOTOR
-        </ThemedText>
-        <ThemedText type="body" style={styles.description}>
-          Probíhá čištění filtru pevných částic
         </ThemedText>
       </Animated.View>
       {onDismiss ? (
@@ -90,8 +87,9 @@ const styles = StyleSheet.create({
   },
   alertBox: {
     backgroundColor: Colors.dark.alertRed,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing["3xl"],
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing["2xl"],
     marginHorizontal: Spacing.xl,
     alignItems: "center",
     width: SCREEN_WIDTH - Spacing.xl * 2,
@@ -99,48 +97,42 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.5,
-        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 16,
+        elevation: 12,
       },
       default: {},
     }),
   },
   iconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: "rgba(255,255,255,0.2)",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.md,
   },
   title: {
     color: Colors.dark.text,
     textAlign: "center",
     fontWeight: "800",
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   divider: {
-    width: 80,
-    height: 3,
+    width: 60,
+    height: 2,
     backgroundColor: "rgba(255,255,255,0.5)",
-    marginVertical: Spacing.lg,
-    borderRadius: 2,
+    marginVertical: Spacing.md,
+    borderRadius: 1,
   },
   subtitle: {
     color: Colors.dark.text,
     textAlign: "center",
     fontWeight: "700",
-    marginBottom: Spacing.md,
-  },
-  description: {
-    color: "#FFCDD2",
-    textAlign: "center",
-    fontSize: 14,
   },
   closeButton: {
     position: "absolute",
