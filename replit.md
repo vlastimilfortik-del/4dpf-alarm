@@ -6,21 +6,23 @@
 ## Current State
 - **Version**: 1.0.0
 - **Platform**: React Native with Expo SDK 54
-- **Design**: Dark slate gray theme with cyan/blue accents
+- **Design**: Dark slate gray theme with cyan/blue accents (#2D8BC9)
 - **Language**: Czech UI (Cs)
+- **Build**: EAS Build configured for APK generation
 
 ## Core Features
-1. **Sound Toggle** - Single large button with speaker icon (blue = ON, gray crossed = OFF)
-2. **Bluetooth Connection** - Auto-connect to OBD-II adapter after first pairing
-3. **DPF Alert Overlay** - Red blinking full-screen alert during regeneration
+1. **Sound Toggle** - Small round button in header (blue = ON, gray crossed = OFF)
+2. **Bluetooth Connection** - Auto-connect to OBD-II adapter with device scanning
+3. **DPF Alert Overlay** - Compact red blinking alert during regeneration
 4. **Sound Alert** - Audio notification plays once when regeneration starts
+5. **VAG Brands Display** - Informational list of supported brands (VW, Audi, Škoda, Seat, Cupra)
 
 ## Design Philosophy
 - Ultra-simple, single-screen interface
 - No unnecessary features or data collection
 - No vehicle modification capabilities
 - Automatic OBD-II connection without user intervention
-- Alert displays over all other apps (maps, calls, music, etc.)
+- Alert displays during regeneration (compact height for map visibility)
 
 ## Project Architecture
 
@@ -28,17 +30,26 @@
 ```
 /
 ├── App.tsx                    # Root component with ErrorBoundary
-├── app.json                   # Expo configuration
+├── app.json                   # Expo configuration with BLE plugin
+├── eas.json                   # EAS Build configuration
 ├── screens/
-│   └── HomeScreen.tsx         # Main (only) screen
+│   └── HomeScreen.tsx         # Main (only) screen with OBD-II integration
 ├── components/
 │   ├── Card.tsx               # Card container with elevation
-│   ├── DPFAlertOverlay.tsx    # Blinking red regeneration alert
+│   ├── DPFAlertOverlay.tsx    # Compact blinking red alert
 │   ├── ErrorBoundary.tsx      # Error boundary wrapper
 │   ├── ErrorFallback.tsx      # Error fallback UI
 │   ├── Screen*.tsx            # Safe area helpers
 │   ├── ThemedText.tsx         # Themed text component
 │   └── ThemedView.tsx         # Themed view component
+├── services/
+│   ├── bluetooth/
+│   │   └── BleManager.ts      # Bluetooth Low Energy manager
+│   └── obd/
+│       ├── index.ts           # Service exports
+│       ├── ELM327.ts          # ELM327 AT commands
+│       ├── VAGProtocol.ts     # VAG-specific DPF reading (VW TP 2.0)
+│       └── DPFMonitor.ts      # Main monitoring orchestrator
 ├── constants/
 │   └── theme.ts               # Design tokens (colors, spacing)
 ├── utils/
@@ -51,32 +62,37 @@
     └── sounds/dpf_alert.mp3   # Alert sound file
 ```
 
+### OBD-II Communication Stack
+1. **BleManager** - Handles Bluetooth Low Energy scanning, connection, and data transfer
+2. **ELM327** - Initializes adapter with AT commands, handles protocol selection
+3. **VAGProtocol** - Reads VAG-specific measuring blocks for DPF data
+4. **DPFMonitor** - Orchestrates connection flow and regeneration detection
+
 ### Main Screen Features
 1. **App Logo & Title** - "4 DPF Alarm" header with app icon
-2. **Sound Toggle Button** - Large pressable button with speaker icon
-   - Blue background + speaker icon = Sound ON
-   - Gray background + crossed speaker = Sound OFF
+2. **Header Buttons** - Small round sound toggle and settings buttons
 3. **Connection Status Card** - Shows OBD-II connection state
-   - Green dot = Connected
-   - Red dot = Disconnected
-   - Bluetooth settings button
+   - Blue background = Connected
+   - Gray background = Disconnected
+   - Click to scan for devices
 4. **Start/Stop Button** - Green/Red button to control monitoring
-5. **Version Info** - Footer with version number
+5. **VAG Brands List** - 3+2 layout, muted colors
+6. **Version Info** - Footer with version number
 
 ### Design System
 - **Background**: #3D4451 (dark slate gray)
 - **Cards**: #4A5568 with border
 - **Primary (buttons/accents)**: #2D8BC9 (cyan blue)
-- **Success**: #38A169 (green)
+- **Success**: #00C853 (green)
 - **Error/Alert**: #E53935 (red)
-- **Text**: #FFFFFF (primary), #9A9A9A (secondary)
+- **Text**: #FFFFFF (primary), #A0A8B8 (secondary)
 
 ### Alert Overlay Behavior
-- Shows blinking red rectangle during DPF regeneration
-- Text: "AKTIVNI REGENERACE DPF" / "NEVYPINEJTE MOTOR"
+- Compact height (about 2/3 of original) to allow map visibility
+- Text: "AKTIVNÍ REGENERACE DPF" / "NEVYPÍNEJTE MOTOR"
 - Sound plays ONCE at regeneration start
 - Overlay blinks throughout regeneration duration
-- Must display over other apps (system overlay)
+- Dismissible with X button
 
 ## Running the App
 
@@ -86,39 +102,41 @@ npm run dev   # Start Expo development server
 ```
 
 ### Testing
-- **Web**: View in browser at localhost:8081
-- **Mobile**: Scan QR code with Expo Go app
+- **Web**: View in browser at localhost:8081 (BLE not available)
+- **Mobile**: Scan QR code with Expo Go app (simulated only)
+- **Real OBD-II**: Requires EAS development build
 
-## User Preferences
-- Dark theme enforced
-- Sound notifications toggle (saved to AsyncStorage)
-- Haptic feedback for interactions
+### Building APK
+```bash
+npx eas build --platform android --profile preview
+```
 
 ## Technical Notes
 - Single-screen architecture (no tab navigation)
+- Uses react-native-ble-plx for Bluetooth (native build required)
 - Uses expo-audio for MP3 playback
 - Uses expo-haptics for tactile feedback
 - AsyncStorage for local persistence
 - No data collection or analytics
-- No vehicle modification capabilities
-- Secure against common attack vectors
+- VAG-specific protocol (not standard OBD-II PIDs)
 
-## Google Play Ready Features
-- Privacy-compliant (no data collection)
-- Proper permissions for Bluetooth OBD-II
-- Portrait orientation locked
-- Dark theme enforced
-- Czech localization
+## OBD-II Protocol Notes
+- VAG vehicles use proprietary CAN commands for DPF data
+- Standard OBD-II PIDs (Mode 01/06) don't reliably return DPF status
+- App implements VW TP 2.0 protocol via ELM327 raw CAN mode
+- Supported adapters: OBDLink, Carista, Vgate iCar, and quality ELM327 v1.4+
 
 ## Bundle Identifier
 - iOS: com.vagdiagnostics.app
 - Android: com.vagdiagnostics.app
 - **DO NOT CHANGE** after initial EAS build
 
-## Recent Changes
-- Simplified to single-screen interface
-- Removed tab navigation completely
-- Removed brand selection, diagnostics, history screens
-- Large sound toggle button with visual feedback
-- Integrated settings directly into main screen
-- Czech UI text throughout
+## Recent Changes (Dec 2024)
+- Implemented real Bluetooth OBD-II communication stack
+- Added device scanning modal with OBD adapter detection
+- Connection status card now turns blue when connected
+- Compact DPF alert overlay (reduced height by 1/3)
+- Small round header buttons for sound and settings
+- VAG brands displayed as informational list
+- EAS Build configuration for Android APK
+- Platform-safe BLE code (graceful fallback on web)
