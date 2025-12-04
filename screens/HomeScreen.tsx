@@ -391,9 +391,9 @@ const styles = StyleSheet.create({
   },
   brandName: {
     color: Colors.dark.secondaryText,
-    fontSize: 14,
+    fontSize: 16,
     marginHorizontal: Spacing.md,
-    opacity: 0.7,
+    opacity: 0.8,
   },
   footer: {
     alignItems: "center",
