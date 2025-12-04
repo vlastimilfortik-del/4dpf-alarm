@@ -14,13 +14,8 @@ import { playDPFAlertSound } from "@/utils/sound";
 
 const appIcon = require("@/assets/images/icon.png");
 
-const VAG_BRANDS = [
-  { name: "Volkswagen", color: "#1E3A5F" },
-  { name: "Audi", color: "#BB0A30" },
-  { name: "Škoda", color: "#4BA82E" },
-  { name: "Seat", color: "#E03A3E" },
-  { name: "Cupra", color: "#95652A" },
-];
+const VAG_BRANDS_ROW1 = ["Volkswagen", "Audi", "Škoda"];
+const VAG_BRANDS_ROW2 = ["Seat", "Cupra"];
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -207,7 +202,7 @@ export default function HomeScreen() {
             onPress={handleBluetoothPress}
             style={({ pressed }) => [
               styles.roundButton,
-              styles.bluetoothButton,
+              styles.settingsButton,
               { opacity: pressed ? 0.7 : 1 },
             ]}
           >
@@ -218,35 +213,32 @@ export default function HomeScreen() {
 
       <View style={styles.content}>
         <Card elevation={1} style={styles.statusCard}>
-          <View style={styles.statusRow}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: isConnected ? Colors.dark.success : Colors.dark.error },
-              ]}
+          <Pressable
+            onPress={handleBluetoothPress}
+            style={({ pressed }) => [
+              styles.statusContent,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <Feather 
+              name="bluetooth" 
+              size={20} 
+              color={isConnected ? Colors.dark.link : Colors.dark.secondaryText}
+              style={styles.bluetoothIcon}
             />
-            <View style={styles.statusContent}>
-              <ThemedText type="body" style={styles.statusTitle}>
-                {isConnected ? "PŘIPOJENO" : "ODPOJENO"}
-              </ThemedText>
-              <ThemedText type="small" color="secondary">
-                {isMonitoring ? "Monitorování aktivní" : "OBD-II adaptér"}
-              </ThemedText>
-            </View>
-            <Pressable
-              onPress={handleBluetoothPress}
-              style={({ pressed }) => [
-                styles.bluetoothIconButton,
-                { opacity: pressed ? 0.7 : 1 },
+            <ThemedText 
+              type="body" 
+              style={[
+                styles.statusTitle,
+                { color: isConnected ? Colors.dark.link : Colors.dark.secondaryText }
               ]}
             >
-              <Feather 
-                name="bluetooth" 
-                size={20} 
-                color={isConnected ? Colors.dark.success : Colors.dark.link} 
-              />
-            </Pressable>
-          </View>
+              {isConnected ? "PŘIPOJENO" : "ODPOJENO"}
+            </ThemedText>
+            <ThemedText type="small" color="secondary" style={styles.statusSubtitle}>
+              {isMonitoring ? "Monitorování aktivní" : "OBD-II adaptér"}
+            </ThemedText>
+          </Pressable>
         </Card>
 
         {isRegenerating ? (
@@ -263,14 +255,18 @@ export default function HomeScreen() {
             Podporované značky
           </ThemedText>
           <Card elevation={1} style={styles.brandsCard}>
-            <View style={styles.brandsGrid}>
-              {VAG_BRANDS.map((brand, index) => (
-                <View key={brand.name} style={styles.brandItem}>
-                  <View style={[styles.brandDot, { backgroundColor: brand.color }]} />
-                  <ThemedText type="body" style={styles.brandName}>
-                    {brand.name}
-                  </ThemedText>
-                </View>
+            <View style={styles.brandsRow}>
+              {VAG_BRANDS_ROW1.map((brand) => (
+                <ThemedText key={brand} type="body" style={styles.brandName}>
+                  {brand}
+                </ThemedText>
+              ))}
+            </View>
+            <View style={styles.brandsRow}>
+              {VAG_BRANDS_ROW2.map((brand) => (
+                <ThemedText key={brand} type="body" style={styles.brandName}>
+                  {brand}
+                </ThemedText>
               ))}
             </View>
           </Card>
@@ -338,7 +334,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  bluetoothButton: {
+  settingsButton: {
     backgroundColor: Colors.dark.backgroundSecondary,
   },
   content: {
@@ -347,29 +343,20 @@ const styles = StyleSheet.create({
   statusCard: {
     marginBottom: Spacing.lg,
   },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: Spacing.md,
-  },
   statusContent: {
-    flex: 1,
+    alignItems: "center",
+    paddingVertical: Spacing.sm,
+  },
+  bluetoothIcon: {
+    marginBottom: Spacing.xs,
   },
   statusTitle: {
     fontWeight: "600",
+    textAlign: "center",
   },
-  bluetoothIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.dark.backgroundSecondary,
-    alignItems: "center",
-    justifyContent: "center",
+  statusSubtitle: {
+    textAlign: "center",
+    marginTop: 2,
   },
   regenStatus: {
     flexDirection: "row",
@@ -394,25 +381,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   brandsCard: {
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
   },
-  brandsGrid: {
-    gap: Spacing.xs,
-  },
-  brandItem: {
+  brandsRow: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.sm,
-  },
-  brandDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: Spacing.md,
+    justifyContent: "center",
+    marginVertical: Spacing.xs,
   },
   brandName: {
-    fontSize: 15,
+    color: Colors.dark.secondaryText,
+    fontSize: 14,
+    marginHorizontal: Spacing.md,
+    opacity: 0.7,
   },
   footer: {
     alignItems: "center",
