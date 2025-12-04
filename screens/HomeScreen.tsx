@@ -14,6 +14,14 @@ import { playDPFAlertSound } from "@/utils/sound";
 
 const appIcon = require("@/assets/images/icon.png");
 
+const VAG_BRANDS = [
+  { name: "Volkswagen", color: "#1E3A5F" },
+  { name: "Audi", color: "#BB0A30" },
+  { name: "Škoda", color: "#4BA82E" },
+  { name: "Seat", color: "#E03A3E" },
+  { name: "Cupra", color: "#95652A" },
+];
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   
@@ -163,7 +171,7 @@ export default function HomeScreen() {
       style={[
         styles.container,
         {
-          paddingTop: insets.top + Spacing.xl,
+          paddingTop: insets.top + Spacing.lg,
           paddingBottom: insets.bottom + Spacing.xl,
         },
       ]}
@@ -178,63 +186,65 @@ export default function HomeScreen() {
         <ThemedText type="h3" style={styles.appTitle}>
           4 DPF Alarm
         </ThemedText>
+        <View style={styles.headerButtons}>
+          <Pressable
+            onPress={handleSoundToggle}
+            style={({ pressed }) => [
+              styles.roundButton,
+              {
+                backgroundColor: soundEnabled ? Colors.dark.link : Colors.dark.backgroundSecondary,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
+          >
+            <Feather
+              name={soundEnabled ? "volume-2" : "volume-x"}
+              size={22}
+              color={soundEnabled ? Colors.dark.buttonText : Colors.dark.secondaryText}
+            />
+          </Pressable>
+          <Pressable
+            onPress={handleBluetoothPress}
+            style={({ pressed }) => [
+              styles.roundButton,
+              styles.bluetoothButton,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <Feather name="settings" size={22} color={Colors.dark.link} />
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.content}>
-        <Pressable
-          onPress={handleSoundToggle}
-          style={({ pressed }) => [
-            styles.soundButton,
-            {
-              backgroundColor: soundEnabled ? Colors.dark.link : Colors.dark.cardBackground,
-              borderColor: soundEnabled ? Colors.dark.link : Colors.dark.cardBorder,
-              opacity: pressed ? 0.8 : 1,
-              transform: [{ scale: pressed ? 0.98 : 1 }],
-            },
-          ]}
-        >
-          <Feather
-            name={soundEnabled ? "volume-2" : "volume-x"}
-            size={48}
-            color={soundEnabled ? Colors.dark.buttonText : Colors.dark.secondaryText}
-          />
-          <ThemedText 
-            type="body" 
-            style={[
-              styles.soundLabel,
-              { color: soundEnabled ? Colors.dark.buttonText : Colors.dark.secondaryText }
-            ]}
-          >
-            {soundEnabled ? "ZVUK ZAPNUTÝ" : "ZVUK VYPNUTÝ"}
-          </ThemedText>
-        </Pressable>
-
         <Card elevation={1} style={styles.statusCard}>
           <View style={styles.statusRow}>
-            <View style={styles.statusLeft}>
-              <View
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: isConnected ? Colors.dark.success : Colors.dark.error },
-                ]}
-              />
-              <View>
-                <ThemedText type="body">
-                  {isConnected ? "PŘIPOJENO" : "ODPOJENO"}
-                </ThemedText>
-                <ThemedText type="small" color="secondary">
-                  {isMonitoring ? "Monitorování aktivní" : "OBD-II adaptér"}
-                </ThemedText>
-              </View>
+            <View
+              style={[
+                styles.statusDot,
+                { backgroundColor: isConnected ? Colors.dark.success : Colors.dark.error },
+              ]}
+            />
+            <View style={styles.statusContent}>
+              <ThemedText type="body" style={styles.statusTitle}>
+                {isConnected ? "PŘIPOJENO" : "ODPOJENO"}
+              </ThemedText>
+              <ThemedText type="small" color="secondary">
+                {isMonitoring ? "Monitorování aktivní" : "OBD-II adaptér"}
+              </ThemedText>
             </View>
             <Pressable
               onPress={handleBluetoothPress}
               style={({ pressed }) => [
-                styles.bluetoothButton,
+                styles.bluetoothIconButton,
                 { opacity: pressed ? 0.7 : 1 },
               ]}
             >
-              <Feather name="bluetooth" size={22} color={Colors.dark.link} />
+              <Feather 
+                name="bluetooth" 
+                size={20} 
+                color={isConnected ? Colors.dark.success : Colors.dark.link} 
+              />
             </Pressable>
           </View>
         </Card>
@@ -247,6 +257,24 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         ) : null}
+
+        <View style={styles.brandsSection}>
+          <ThemedText type="small" color="secondary" style={styles.brandsLabel}>
+            Podporované značky
+          </ThemedText>
+          <Card elevation={1} style={styles.brandsCard}>
+            <View style={styles.brandsGrid}>
+              {VAG_BRANDS.map((brand, index) => (
+                <View key={brand.name} style={styles.brandItem}>
+                  <View style={[styles.brandDot, { backgroundColor: brand.color }]} />
+                  <ThemedText type="body" style={styles.brandName}>
+                    {brand.name}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+          </Card>
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -287,42 +315,39 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: Spacing["3xl"],
+    marginBottom: Spacing.xl,
   },
   appIcon: {
-    width: 72,
-    height: 72,
+    width: 64,
+    height: 64,
     borderRadius: BorderRadius.md,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   appTitle: {
     textAlign: "center",
+    marginBottom: Spacing.md,
+  },
+  headerButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  roundButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bluetoothButton: {
+    backgroundColor: Colors.dark.backgroundSecondary,
   },
   content: {
     flex: 1,
   },
-  soundButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: Spacing["3xl"],
-    borderRadius: BorderRadius.lg,
-    borderWidth: 2,
-    marginBottom: Spacing["2xl"],
-  },
-  soundLabel: {
-    marginTop: Spacing.md,
-    fontWeight: "600",
-    letterSpacing: 1,
-  },
   statusCard: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  statusLeft: {
     flexDirection: "row",
     alignItems: "center",
   },
@@ -332,10 +357,16 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginRight: Spacing.md,
   },
-  bluetoothButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  statusContent: {
+    flex: 1,
+  },
+  statusTitle: {
+    fontWeight: "600",
+  },
+  bluetoothIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: Colors.dark.backgroundSecondary,
     alignItems: "center",
     justifyContent: "center",
@@ -348,11 +379,40 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   regenText: {
     marginLeft: Spacing.sm,
     color: Colors.dark.alertRed,
     fontWeight: "600",
+  },
+  brandsSection: {
+    marginTop: Spacing.lg,
+  },
+  brandsLabel: {
+    marginBottom: Spacing.sm,
+    textAlign: "center",
+  },
+  brandsCard: {
+    paddingVertical: Spacing.md,
+  },
+  brandsGrid: {
+    gap: Spacing.xs,
+  },
+  brandItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+  },
+  brandDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: Spacing.md,
+  },
+  brandName: {
+    fontSize: 15,
   },
   footer: {
     alignItems: "center",
