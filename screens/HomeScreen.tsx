@@ -176,35 +176,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     }
   }, [cleanupAll]);
 
-  const testOverlay = useCallback(() => {
-    setShowAlert(true);
-    playDPFAlertSound();
-    
-    if (Platform.OS !== "web") {
-      try {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      } catch (error) {
-        console.log("Haptics not available");
-      }
-    }
-    
-    setTimeout(() => {
-      setShowAlert(false);
-    }, 5000);
-  }, []);
-
-  const testSound = useCallback(() => {
-    playDPFAlertSound();
-    
-    if (Platform.OS !== "web") {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch (error) {
-        console.log("Haptics not available");
-      }
-    }
-  }, []);
-
   useEffect(() => {
     return () => {
       cleanupAll();
@@ -312,34 +283,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         >
           {isMonitoring ? "ZASTAVIT MONITOROVÁNÍ" : "SPUSTIT MONITOROVÁNÍ"}
         </Button>
-
-        <View style={styles.testButtonsRow}>
-          <Pressable
-            onPress={testOverlay}
-            style={({ pressed }) => [
-              styles.testButton,
-              { opacity: pressed ? 0.7 : 1 },
-            ]}
-          >
-            <Feather name="layers" size={18} color={Colors.dark.secondaryText} />
-            <ThemedText type="small" color="secondary" style={styles.testButtonText}>
-              Test překryvu
-            </ThemedText>
-          </Pressable>
-          
-          <Pressable
-            onPress={testSound}
-            style={({ pressed }) => [
-              styles.testButton,
-              { opacity: pressed ? 0.7 : 1 },
-            ]}
-          >
-            <Feather name="volume-2" size={18} color={Colors.dark.secondaryText} />
-            <ThemedText type="small" color="secondary" style={styles.testButtonText}>
-              Testovací zvuk
-            </ThemedText>
-          </Pressable>
-        </View>
       </View>
     </View>
   );
@@ -355,7 +298,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: Spacing["2xl"],
+    marginBottom: Spacing["3xl"],
+    zIndex: 10,
   },
   headerLeft: {
     flexDirection: "row",
@@ -429,25 +373,5 @@ const styles = StyleSheet.create({
   },
   mainButton: {
     marginTop: Spacing.lg,
-  },
-  testButtonsRow: {
-    flexDirection: "row",
-    gap: Spacing.md,
-    marginTop: Spacing.lg,
-  },
-  testButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.dark.cardBackground,
-    borderRadius: BorderRadius.xs,
-    borderWidth: 1,
-    borderColor: Colors.dark.cardBorder,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-  },
-  testButtonText: {
-    marginLeft: Spacing.sm,
   },
 });
