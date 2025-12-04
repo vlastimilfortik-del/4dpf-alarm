@@ -31,10 +31,22 @@ const UDS_READ_DATA_BY_ID = '22';
 const REGEN_THRESHOLD_SOOT = 25;
 const MAX_SOOT_LOAD = 45;
 
+const TEMP_REGEN_THRESHOLD_DPF = 550;
+const TEMP_REGEN_THRESHOLD_EXHAUST = 450;
+const TEMP_NORMAL_MAX_DPF = 400;
+const TEMP_RISE_RATE_THRESHOLD = 50;
+const TEMP_HISTORY_SIZE = 10;
+
 class VAGProtocolService {
   private lastDPFData: DPFData | null = null;
   private sessionActive: boolean = false;
   private use29BitAddressing: boolean = false;
+  private tempHistory: { dpf: number[]; exhaust: number[]; timestamps: number[] } = {
+    dpf: [],
+    exhaust: [],
+    timestamps: [],
+  };
+  private regenDetectedByTemp: boolean = false;
 
   async initializeVAGProtocol(): Promise<boolean> {
     try {
@@ -114,7 +126,7 @@ class VAGProtocolService {
       const temperatures = await this.readTemperatures();
       const distance = await this.readDistanceSinceRegen();
 
-      const isRegenerating = this.detectRegeneration(sootData, regenStatus);
+      const isRegenerating = this.detectRegeneration(sootData, regenStatus, temperatures);
 
       this.lastDPFData = {
         sootLoad: sootData.sootMass,
@@ -200,33 +212,62 @@ class VAGProtocolService {
 
   private async readDPFDataFallback(): Promise<DPFData | null> {
     try {
-      const mode06Response = await elm327.sendCommand('06B2');
-      
-      const bytes = this.parseHexResponse(mode06Response);
-      
       let sootLoad = 0;
-      let isRegenerating = false;
+      let regenStatusByte = 0;
 
-      if (bytes.length >= 6) {
-        sootLoad = bytes[4] / 2.55;
-        isRegenerating = bytes[5] > 0;
+      try {
+        const mode06Response = await elm327.sendCommand('06B2');
+        const bytes = this.parseHexResponse(mode06Response);
+        
+        if (bytes.length >= 6) {
+          sootLoad = bytes[4] / 2.55;
+          regenStatusByte = bytes[5];
+        }
+      } catch (e) {
+        console.log('Mode 06 not supported, using temperature detection only');
       }
 
-      const mode01Response = await elm327.sendCommand('017A');
-      const mode01Bytes = this.parseHexResponse(mode01Response);
-      
-      let dpfTemp = null;
-      if (mode01Bytes.length >= 4) {
-        dpfTemp = ((mode01Bytes[2] << 8) + mode01Bytes[3]) / 10 - 40;
+      let dpfTemp: number | null = null;
+      let exhaustTemp: number | null = null;
+
+      try {
+        const mode01Response = await elm327.sendCommand('017C');
+        const mode01Bytes = this.parseHexResponse(mode01Response);
+        
+        if (mode01Bytes.length >= 4) {
+          dpfTemp = ((mode01Bytes[2] << 8) + mode01Bytes[3]) / 10 - 40;
+        }
+      } catch (e) {
+        console.log('PID 7C not supported');
       }
+
+      if (dpfTemp === null) {
+        try {
+          const egt1Response = await elm327.sendCommand('0178');
+          const egt1Bytes = this.parseHexResponse(egt1Response);
+          
+          if (egt1Bytes.length >= 4) {
+            exhaustTemp = ((egt1Bytes[2] << 8) + egt1Bytes[3]) / 10 - 40;
+          }
+        } catch (e) {
+          console.log('PID 78 not supported');
+        }
+      }
+
+      const temperatures = { dpfTemp, exhaustTemp };
+      const isRegenerating = this.detectRegeneration(
+        { sootMass: sootLoad },
+        regenStatusByte,
+        temperatures
+      );
 
       this.lastDPFData = {
         sootLoad,
         sootLoadPercent: Math.min(100, (sootLoad / MAX_SOOT_LOAD) * 100),
         isRegenerating,
-        regenPhase: isRegenerating ? 'active' : 'none',
+        regenPhase: this.getRegenPhase(regenStatusByte, isRegenerating),
         dpfTemperature: dpfTemp,
-        exhaustTemperature: null,
+        exhaustTemperature: exhaustTemp,
         distanceSinceRegen: null,
         timeSinceRegen: null,
         lastUpdate: new Date(),
@@ -239,8 +280,13 @@ class VAGProtocolService {
     }
   }
 
-  private detectRegeneration(sootData: { sootMass: number }, regenStatus: number): boolean {
+  private detectRegeneration(
+    sootData: { sootMass: number },
+    regenStatus: number,
+    temperatures: { dpfTemp: number | null; exhaustTemp: number | null }
+  ): boolean {
     if (regenStatus > 0) {
+      this.regenDetectedByTemp = false;
       return true;
     }
 
@@ -253,7 +299,98 @@ class VAGProtocolService {
       }
     }
 
+    const tempBasedRegen = this.detectRegenByTemperature(temperatures);
+    if (tempBasedRegen) {
+      this.regenDetectedByTemp = true;
+      return true;
+    }
+
+    if (this.regenDetectedByTemp) {
+      const regenEnded = this.checkRegenEndedByTemperature(temperatures);
+      if (regenEnded) {
+        this.regenDetectedByTemp = false;
+        return false;
+      }
+      return true;
+    }
+
     return false;
+  }
+
+  private detectRegenByTemperature(
+    temperatures: { dpfTemp: number | null; exhaustTemp: number | null }
+  ): boolean {
+    const { dpfTemp, exhaustTemp } = temperatures;
+    const now = Date.now();
+
+    if (dpfTemp !== null) {
+      this.tempHistory.dpf.push(dpfTemp);
+      this.tempHistory.timestamps.push(now);
+      if (this.tempHistory.dpf.length > TEMP_HISTORY_SIZE) {
+        this.tempHistory.dpf.shift();
+        this.tempHistory.timestamps.shift();
+      }
+    }
+
+    if (exhaustTemp !== null) {
+      this.tempHistory.exhaust.push(exhaustTemp);
+      if (this.tempHistory.exhaust.length > TEMP_HISTORY_SIZE) {
+        this.tempHistory.exhaust.shift();
+      }
+    }
+
+    if (dpfTemp !== null && dpfTemp >= TEMP_REGEN_THRESHOLD_DPF) {
+      console.log(`Regen detected: DPF temp ${dpfTemp}°C >= ${TEMP_REGEN_THRESHOLD_DPF}°C`);
+      return true;
+    }
+
+    if (exhaustTemp !== null && exhaustTemp >= TEMP_REGEN_THRESHOLD_EXHAUST) {
+      console.log(`Regen detected: Exhaust temp ${exhaustTemp}°C >= ${TEMP_REGEN_THRESHOLD_EXHAUST}°C`);
+      return true;
+    }
+
+    if (this.tempHistory.dpf.length >= 3) {
+      const riseRate = this.calculateTempRiseRate(this.tempHistory.dpf, this.tempHistory.timestamps);
+      if (riseRate > TEMP_RISE_RATE_THRESHOLD && (dpfTemp ?? 0) > TEMP_NORMAL_MAX_DPF) {
+        console.log(`Regen detected: Rapid temp rise ${riseRate.toFixed(1)}°C/min, current ${dpfTemp}°C`);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private checkRegenEndedByTemperature(
+    temperatures: { dpfTemp: number | null; exhaustTemp: number | null }
+  ): boolean {
+    const { dpfTemp, exhaustTemp } = temperatures;
+
+    if (dpfTemp !== null && dpfTemp < TEMP_NORMAL_MAX_DPF) {
+      if (this.tempHistory.dpf.length >= 3) {
+        const recentTemps = this.tempHistory.dpf.slice(-3);
+        const allBelow = recentTemps.every(t => t < TEMP_NORMAL_MAX_DPF);
+        if (allBelow) {
+          console.log('Regen ended: DPF temp dropped below threshold');
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private calculateTempRiseRate(temps: number[], timestamps: number[]): number {
+    if (temps.length < 2) return 0;
+
+    const firstTemp = temps[0];
+    const lastTemp = temps[temps.length - 1];
+    const firstTime = timestamps[0];
+    const lastTime = timestamps[timestamps.length - 1];
+
+    const timeDiffMinutes = (lastTime - firstTime) / 60000;
+    if (timeDiffMinutes <= 0) return 0;
+
+    return (lastTemp - firstTemp) / timeDiffMinutes;
   }
 
   private getRegenPhase(
@@ -261,6 +398,10 @@ class VAGProtocolService {
     isRegenerating: boolean
   ): 'none' | 'passive' | 'active' | 'service' {
     if (!isRegenerating) return 'none';
+
+    if (this.regenDetectedByTemp && regenStatus === 0) {
+      return 'active';
+    }
 
     switch (regenStatus) {
       case 1:
@@ -272,6 +413,10 @@ class VAGProtocolService {
       default:
         return 'active';
     }
+  }
+
+  isRegenDetectedByTemperature(): boolean {
+    return this.regenDetectedByTemp;
   }
 
   private parseHexResponse(response: string): number[] {

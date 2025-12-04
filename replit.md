@@ -126,6 +126,15 @@ npx eas build --platform android --profile preview
 - App implements VW TP 2.0 protocol via ELM327 raw CAN mode
 - Supported adapters: OBDLink, Carista, Vgate iCar, and quality ELM327 v1.4+
 
+## Temperature-Based Regeneration Detection
+For older vehicles that don't send regeneration status byte:
+- **DPF Temperature Threshold**: 550°C (active regen detected)
+- **Exhaust Temperature Threshold**: 450°C (active regen detected)
+- **Normal Max Temperature**: 400°C (regen ends when below this)
+- **Rapid Rise Detection**: >50°C/min rise + temp above 400°C
+- **Temperature History**: Tracks last 10 readings for trend analysis
+- **Fallback PIDs**: Uses OBD-II PIDs 0x7C (DPF temp) and 0x78 (EGT) if VAG commands fail
+
 ## Bundle Identifier
 - iOS: com.vagdiagnostics.app
 - Android: com.vagdiagnostics.app
