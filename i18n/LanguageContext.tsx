@@ -24,7 +24,8 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   const loadLanguage = async () => {
     try {
       const savedLanguage = await storage.getLanguage();
-      if (savedLanguage && (savedLanguage === 'cs' || savedLanguage === 'en' || savedLanguage === 'de')) {
+      const validLanguages = ['cs', 'en', 'de', 'fr', 'es', 'it', 'pl', 'nl', 'pt', 'sv', 'no', 'da', 'fi', 'hu', 'ro'];
+      if (savedLanguage && validLanguages.includes(savedLanguage)) {
         setLanguageState(savedLanguage as Language);
       }
     } catch (error) {

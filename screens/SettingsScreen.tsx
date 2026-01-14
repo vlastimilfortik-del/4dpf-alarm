@@ -13,7 +13,7 @@ type SettingsScreenProps = {
   onClose: () => void;
 };
 
-const LANGUAGES: Language[] = ['cs', 'en', 'de'];
+const LANGUAGES: Language[] = ['cs', 'en', 'de', 'fr', 'es', 'it', 'pl', 'nl', 'pt', 'sv', 'no', 'da', 'fi', 'hu', 'ro'];
 
 export function SettingsScreen({ visible, onClose }: SettingsScreenProps) {
   const insets = useSafeAreaInsets();

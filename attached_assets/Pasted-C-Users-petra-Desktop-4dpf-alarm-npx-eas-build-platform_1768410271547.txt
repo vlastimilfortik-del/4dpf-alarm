@@ -1,0 +1,20 @@
+C:\Users\petra\Desktop\4dpf-alarm>npx eas build --platform android --profile preview
+The field "cli.appVersionSource" is not set, but it will be required in the future. Learn more: https://docs.expo.dev/build-reference/app-versions/
+Resolved "preview" environment for the build. Learn more: https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds
+No environment variables with visibility "Plain text" and "Sensitive" found for the "preview" environment on EAS.
+
+
+
+The field "cli.appVersionSource" is not set, but it will be required in the future. Learn more: https://docs.expo.dev/build-reference/app-versions/
+√ Using remote Android credentials (Expo server)
+√ Using Keystore from configuration: Build Credentials 0p-eDOo4fR (default)
+
+Compressing project files and uploading to EAS Build. Learn more: https://expo.fyi/eas-build-archive
+√ Compressed project files 4s (48.1 MB)
+× Uploading to EAS Build (23.8 MB / 48.1 MB)
+Failed to upload the project tarball to EAS Build
+
+Reason: request to https://storage.googleapis.com/turtle-v2-projects/production/11cbcb83-b810-4d04-b4b8-6720b32dcd3f/032a4bd6-f745-46ef-8d81-f8fda684d41d?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260114%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260114T163033Z&X-Goog-Expires=3600&X-Goog-SignedHeaders=host%3Bx-goog-content-length-range&X-Goog-Signature=7bbc5d36bd655c42b2d37f834456bd7e9097662e542142414d10079e205a25e1a6099e90f09c34ade520ea6ebe4d73f99508279deb1187230d5d3f8ce7dd56803c323231d1ad55d7139601b5714e3ab4ebb919fc47dd5b40744bc9f6dba3f7064491aaf1827c47488fd28cedd7004bf927cd12c0a9cecbe18456516940888ce74cc64c9684f7c0e21b25fea99029db140698269085ee491cbe8450b5ae9296cf63b1c24353c8f79b5c3f86e4a8b750edf564d5301f3ea081aec2f5652456bade76d8e5fa254edc3b8479beb7a1b458fc35063f9c3c22e590bf172d18fbb785ae54335aded6adf094a940288122cb70fe3cacf68949682c2ddf37c1f9e427e965 failed, reason: write ECONNRESET
+    Error: build command failed.
+
+C:\Users\petra\Desktop\4dpf-alarm>
