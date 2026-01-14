@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ThemedText } from "./ThemedText";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTranslation } from "@/i18n";
 
 type DPFAlertOverlayProps = {
   visible: boolean;
@@ -24,6 +25,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export function DPFAlertOverlay({ visible, onDismiss }: DPFAlertOverlayProps) {
   const insets = useSafeAreaInsets();
   const opacity = useSharedValue(1);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (visible) {
@@ -56,10 +58,10 @@ export function DPFAlertOverlay({ visible, onDismiss }: DPFAlertOverlayProps) {
           </View>
           <View style={styles.textContainer}>
             <ThemedText type="body" style={styles.title}>
-              AKTIVNÍ REGENERACE DPF
+              {t('activeRegeneration')}
             </ThemedText>
             <ThemedText type="caption" style={styles.subtitle}>
-              NEVYPÍNEJTE MOTOR
+              {t('doNotTurnOffEngine')}
             </ThemedText>
           </View>
           {onDismiss ? (

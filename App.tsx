@@ -7,19 +7,22 @@ import { StatusBar } from "expo-status-bar";
 
 import HomeScreen from "@/screens/HomeScreen";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LanguageProvider } from "@/i18n";
 import { Colors } from "@/constants/theme";
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <SafeAreaProvider>
-        <GestureHandlerRootView style={styles.root}>
-          <KeyboardProvider>
-            <HomeScreen />
-            <StatusBar style="light" />
-          </KeyboardProvider>
-        </GestureHandlerRootView>
-      </SafeAreaProvider>
+      <LanguageProvider>
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={styles.root}>
+            <KeyboardProvider>
+              <HomeScreen />
+              <StatusBar style="light" />
+            </KeyboardProvider>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
+      </LanguageProvider>
     </ErrorBoundary>
   );
 }

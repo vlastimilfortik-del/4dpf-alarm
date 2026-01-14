@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   AVATAR_INDEX: "@vag_diagnostics/avatar_index",
   DPF_HISTORY: "@vag_diagnostics/dpf_history",
   BLUETOOTH_DEVICES: "@vag_diagnostics/bluetooth_devices",
+  LANGUAGE: "@vag_diagnostics/language",
 } as const;
 
 export interface DPFHistoryEntry {
@@ -150,6 +151,22 @@ export const storage = {
       await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
     } catch (error) {
       console.error("Failed to clear storage:", error);
+    }
+  },
+
+  async getLanguage(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(STORAGE_KEYS.LANGUAGE);
+    } catch {
+      return null;
+    }
+  },
+
+  async setLanguage(language: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.LANGUAGE, language);
+    } catch (error) {
+      console.error("Failed to save language:", error);
     }
   },
 };

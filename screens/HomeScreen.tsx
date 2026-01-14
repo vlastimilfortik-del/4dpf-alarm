@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { View, StyleSheet, Platform, Pressable, Linking, Alert, Modal, FlatList } from "react-native";
+import { View, StyleSheet, Platform, Pressable, Alert, Modal, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { Feather } from "@expo/vector-icons";
@@ -9,9 +9,11 @@ import { Device } from "react-native-ble-plx";
 import { ThemedText } from "@/components/ThemedText";
 import { DPFAlertOverlay } from "@/components/DPFAlertOverlay";
 import { Card } from "@/components/Card";
+import { SettingsScreen } from "@/screens/SettingsScreen";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 import { storage } from "@/utils/storage";
 import { playDPFAlertSound } from "@/utils/sound";
+import { useTranslation } from "@/i18n";
 import dpfMonitor, { type MonitoringState } from "@/services/obd/DPFMonitor";
 import { type DPFData } from "@/services/obd/VAGProtocol";
 
@@ -32,13 +34,21 @@ export default function HomeScreen() {
   const [showDeviceList, setShowDeviceList] = useState(false);
   const [foundDevices, setFoundDevices] = useState<Device[]>([]);
   const [dpfData, setDpfData] = useState<DPFData | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  
+  const { t } = useTranslation();
   
   const soundPlayedRef = useRef(false);
   const soundEnabledRef = useRef(true);
+  const tRef = useRef(t);
 
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
   }, [soundEnabled]);
+
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -100,7 +110,7 @@ export default function HomeScreen() {
         });
       },
       onError: (error: string) => {
-        Alert.alert("Chyba", error);
+        Alert.alert(tRef.current('errorTitle'), error);
       },
     });
 
@@ -139,27 +149,24 @@ export default function HomeScreen() {
     }
   }, [soundEnabled, triggerHaptic]);
 
-  const handleBluetoothPress = useCallback(() => {
-    triggerHaptic('light');
-    if (Platform.OS === "web") {
-      Alert.alert(
-        "Bluetooth",
-        "Pro připojení k OBD-II adaptéru spusťte aplikaci v Expo Go nebo nainstalovanou verzi na vašem telefonu."
-      );
-    } else {
-      try {
-        Linking.openSettings();
-      } catch (error) {
-        Alert.alert("Chyba", "Nelze otevřít nastavení Bluetooth");
-      }
+  const handleTestAlert = useCallback(() => {
+    triggerHaptic('warning');
+    setShowAlert(true);
+    if (soundEnabledRef.current) {
+      playDPFAlertSound();
     }
+  }, [triggerHaptic]);
+
+  const handleSettingsPress = useCallback(() => {
+    triggerHaptic('light');
+    setShowSettings(true);
   }, [triggerHaptic]);
 
   const handleScanDevices = useCallback(async () => {
     if (Platform.OS === "web") {
       Alert.alert(
-        "Bluetooth",
-        "Bluetooth není dostupný na webu. Použijte nainstalovanou aplikaci."
+        t('bluetooth'),
+        t('bluetoothWebHint')
       );
       return;
     }
@@ -168,7 +175,7 @@ export default function HomeScreen() {
     setFoundDevices([]);
     setShowDeviceList(true);
     await dpfMonitor.scanForDevices();
-  }, [triggerHaptic]);
+  }, [triggerHaptic, t]);
 
   const handleSelectDevice = useCallback(async (device: Device) => {
     setShowDeviceList(false);
@@ -176,9 +183,9 @@ export default function HomeScreen() {
     
     const connected = await dpfMonitor.connectToDevice(device);
     if (connected) {
-      Alert.alert("Připojeno", `Připojeno k ${device.name || 'OBD-II adaptér'}`);
+      Alert.alert(t('connected'), t('connectedTo', { name: device.name || t('obdAdapter') }));
     }
-  }, [triggerHaptic]);
+  }, [triggerHaptic, t]);
 
   const startMonitoring = useCallback(async () => {
     triggerHaptic('medium');
@@ -191,9 +198,9 @@ export default function HomeScreen() {
 
     const started = await dpfMonitor.startMonitoring();
     if (!started) {
-      Alert.alert("Chyba", "Nepodařilo se spustit monitorování");
+      Alert.alert(t('errorTitle'), t('cannotStartMonitoring'));
     }
-  }, [isConnected, handleScanDevices, triggerHaptic]);
+  }, [isConnected, handleScanDevices, triggerHaptic, t]);
 
   const stopMonitoring = useCallback(() => {
     dpfMonitor.stopMonitoring();
@@ -206,29 +213,29 @@ export default function HomeScreen() {
   const getStatusText = (): string => {
     switch (monitoringState) {
       case 'connecting':
-        return 'PŘIPOJOVÁNÍ...';
+        return t('connecting');
       case 'initializing':
-        return 'INICIALIZACE...';
+        return t('initializing');
       case 'monitoring':
-        return 'PŘIPOJENO';
+        return t('connected');
       case 'error':
-        return 'CHYBA';
+        return t('error');
       default:
-        return isConnected ? 'PŘIPOJENO' : 'ODPOJENO';
+        return isConnected ? t('connected') : t('disconnected');
     }
   };
 
   const getSubtitleText = (): string => {
     if (monitoringState === 'monitoring' && dpfData) {
-      return `DPF: ${dpfData.sootLoadPercent.toFixed(0)}% naplnění`;
+      return t('dpfFillPercent', { percent: dpfData.sootLoadPercent.toFixed(0) });
     }
     if (monitoringState === 'connecting') {
-      return 'Hledání OBD-II adaptéru...';
+      return t('searchingAdapter');
     }
     if (monitoringState === 'initializing') {
-      return 'Inicializace ELM327...';
+      return t('initializingElm');
     }
-    return 'OBD-II adaptér';
+    return t('obdAdapter');
   };
 
   const renderDeviceItem = ({ item }: { item: Device }) => (
@@ -242,7 +249,7 @@ export default function HomeScreen() {
       <Feather name="bluetooth" size={20} color={Colors.dark.primary} />
       <View style={styles.deviceInfo}>
         <ThemedText type="body" style={styles.deviceName}>
-          {item.name || 'Neznámé zařízení'}
+          {item.name || t('unknownDevice')}
         </ThemedText>
         <ThemedText type="small" color="secondary">
           {item.id}
@@ -267,6 +274,11 @@ export default function HomeScreen() {
         onDismiss={() => setShowAlert(false)} 
       />
 
+      <SettingsScreen 
+        visible={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
+
       <Modal
         visible={showDeviceList}
         animationType="slide"
@@ -276,7 +288,7 @@ export default function HomeScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { paddingBottom: insets.bottom + Spacing.lg }]}>
             <View style={styles.modalHeader}>
-              <ThemedText type="h4">OBD-II adaptéry</ThemedText>
+              <ThemedText type="h4">{t('obdAdapters')}</ThemedText>
               <Pressable onPress={() => setShowDeviceList(false)}>
                 <Feather name="x" size={24} color={Colors.dark.text} />
               </Pressable>
@@ -287,11 +299,11 @@ export default function HomeScreen() {
                 <Feather name="search" size={48} color={Colors.dark.secondaryText} />
                 <ThemedText type="body" color="secondary" style={styles.emptyText}>
                   {monitoringState === 'connecting' 
-                    ? 'Hledání OBD-II adaptérů...'
-                    : 'Žádné adaptéry nenalezeny'}
+                    ? t('searchingAdapters')
+                    : t('noAdaptersFound')}
                 </ThemedText>
                 <ThemedText type="small" color="secondary" style={styles.emptyHint}>
-                  Ujistěte se, že je adaptér zapojený a Bluetooth zapnutý
+                  {t('adapterHint')}
                 </ThemedText>
               </View>
             ) : (
@@ -329,7 +341,17 @@ export default function HomeScreen() {
             />
           </Pressable>
           <Pressable
-            onPress={handleBluetoothPress}
+            onPress={handleTestAlert}
+            style={({ pressed }) => [
+              styles.roundButton,
+              styles.testButton,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <Feather name="alert-triangle" size={22} color={Colors.dark.alertRed} />
+          </Pressable>
+          <Pressable
+            onPress={handleSettingsPress}
             style={({ pressed }) => [
               styles.roundButton,
               styles.settingsButton,
@@ -382,14 +404,14 @@ export default function HomeScreen() {
           <View style={styles.regenStatus}>
             <Feather name="zap" size={24} color={Colors.dark.alertRed} />
             <ThemedText type="body" style={styles.regenText}>
-              REGENERACE DPF PROBÍHÁ
+              {t('dpfRegenerationInProgress')}
             </ThemedText>
           </View>
         ) : null}
 
         <View style={styles.brandsSection}>
           <ThemedText type="small" color="secondary" style={styles.brandsLabel}>
-            Podporované značky
+            {t('supportedBrands')}
           </ThemedText>
           <Card elevation={1} style={styles.brandsCard}>
             <View style={styles.brandsRow}>
@@ -431,12 +453,12 @@ export default function HomeScreen() {
             color={Colors.dark.buttonText}
           />
           <ThemedText type="h4" style={styles.mainButtonText}>
-            {isMonitoring ? "ZASTAVIT" : "SPUSTIT"}
+            {isMonitoring ? t('stop') : t('start')}
           </ThemedText>
         </Pressable>
 
         <ThemedText type="caption" color="secondary" style={styles.versionText}>
-          Verze 1.0.0
+          {t('version')} 1.0.0
         </ThemedText>
       </View>
     </View>
@@ -476,6 +498,9 @@ const styles = StyleSheet.create({
   },
   settingsButton: {
     backgroundColor: Colors.dark.backgroundSecondary,
+  },
+  testButton: {
+    backgroundColor: Colors.dark.alertRed + "30",
   },
   content: {
     flex: 1,
