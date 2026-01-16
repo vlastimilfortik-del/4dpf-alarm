@@ -77,6 +77,7 @@ class DPFMonitorService {
     if (connected) {
       this.lastConnectedDeviceId = device.id;
       await this.saveLastDeviceId(device.id);
+      this.setState('idle');
       return true;
     }
     
