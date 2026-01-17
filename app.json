@@ -65,7 +65,9 @@
           "color": "#2D8BC9",
           "sounds": ["./assets/sounds/dpf_alert.mp3"]
         }
-      ]
+      ],
+      "expo-background-fetch",
+      "expo-task-manager"
     ],
     "experiments": {
       "reactCompiler": true

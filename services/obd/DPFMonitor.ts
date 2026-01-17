@@ -225,6 +225,8 @@ class DPFMonitorService {
 
   private async handleAppStateChange(nextAppState: AppStateStatus): Promise<void> {
     if (nextAppState === 'active') {
+      await notificationService.dismissPersistentNotification();
+      
       if (this.wasMonitoringBeforeBackground && !bleManager.isConnected()) {
         await this.tryAutoReconnect();
       }
@@ -235,13 +237,6 @@ class DPFMonitorService {
         await notificationService.showDPFAlert(
           'DPF REGENERATION ACTIVE',
           'Do not turn off the engine!'
-        );
-      }
-      
-      if (this.monitoringState === 'monitoring') {
-        await notificationService.showPersistentNotification(
-          '4 DPF Alarm',
-          'Monitoring DPF in background...'
         );
       }
     }

@@ -49,6 +49,8 @@ export type TranslationKeys = {
   close: string;
   bluetooth: string;
   unknownDevice: string;
+  engineTemperature: string;
+  dpfTemperature: string;
 };
 
 const cs: TranslationKeys = {
@@ -100,6 +102,8 @@ const cs: TranslationKeys = {
   close: 'Zavřít',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Neznámé zařízení',
+  engineTemperature: 'Teplota výfuku',
+  dpfTemperature: 'Teplota DPF',
 };
 
 const en: TranslationKeys = {
@@ -151,6 +155,8 @@ const en: TranslationKeys = {
   close: 'Close',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Unknown device',
+  engineTemperature: 'Exhaust Temp',
+  dpfTemperature: 'DPF Temp',
 };
 
 const de: TranslationKeys = {
@@ -202,6 +208,8 @@ const de: TranslationKeys = {
   close: 'Schließen',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Unbekanntes Gerät',
+  engineTemperature: 'Abgastemp.',
+  dpfTemperature: 'DPF-Temp.',
 };
 
 const fr: TranslationKeys = {
@@ -253,6 +261,8 @@ const fr: TranslationKeys = {
   close: 'Fermer',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Appareil inconnu',
+  engineTemperature: 'Temp. échapp.',
+  dpfTemperature: 'Temp. FAP',
 };
 
 const es: TranslationKeys = {
@@ -304,6 +314,8 @@ const es: TranslationKeys = {
   close: 'Cerrar',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Dispositivo desconocido',
+  engineTemperature: 'Temp. escape',
+  dpfTemperature: 'Temp. DPF',
 };
 
 const it: TranslationKeys = {
@@ -355,6 +367,8 @@ const it: TranslationKeys = {
   close: 'Chiudi',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Dispositivo sconosciuto',
+  engineTemperature: 'Temp. scarico',
+  dpfTemperature: 'Temp. DPF',
 };
 
 const pl: TranslationKeys = {
@@ -406,6 +420,8 @@ const pl: TranslationKeys = {
   close: 'Zamknij',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Nieznane urządzenie',
+  engineTemperature: 'Temp. spalin',
+  dpfTemperature: 'Temp. DPF',
 };
 
 const nl: TranslationKeys = {
@@ -457,6 +473,8 @@ const nl: TranslationKeys = {
   close: 'Sluiten',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Onbekend apparaat',
+  engineTemperature: 'Uitlaattemp.',
+  dpfTemperature: 'DPF-temp.',
 };
 
 const pt: TranslationKeys = {
@@ -508,6 +526,8 @@ const pt: TranslationKeys = {
   close: 'Fechar',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Dispositivo desconhecido',
+  engineTemperature: 'Temp. escape',
+  dpfTemperature: 'Temp. DPF',
 };
 
 const sv: TranslationKeys = {
@@ -559,6 +579,8 @@ const sv: TranslationKeys = {
   close: 'Stäng',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Okänd enhet',
+  engineTemperature: 'Avgastemp.',
+  dpfTemperature: 'DPF-temp.',
 };
 
 const no: TranslationKeys = {
@@ -610,6 +632,8 @@ const no: TranslationKeys = {
   close: 'Lukk',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Ukjent enhet',
+  engineTemperature: 'Eksostemperatur',
+  dpfTemperature: 'DPF-temp.',
 };
 
 const da: TranslationKeys = {
@@ -661,6 +685,8 @@ const da: TranslationKeys = {
   close: 'Luk',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Ukendt enhed',
+  engineTemperature: 'Udstødningstemp.',
+  dpfTemperature: 'DPF-temp.',
 };
 
 const fi: TranslationKeys = {
@@ -712,6 +738,8 @@ const fi: TranslationKeys = {
   close: 'Sulje',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Tuntematon laite',
+  engineTemperature: 'Pakolämpö',
+  dpfTemperature: 'DPF-lämpö',
 };
 
 const hu: TranslationKeys = {
@@ -763,6 +791,8 @@ const hu: TranslationKeys = {
   close: 'Bezárás',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Ismeretlen eszköz',
+  engineTemperature: 'Kipufogó hőm.',
+  dpfTemperature: 'DPF hőm.',
 };
 
 const ro: TranslationKeys = {
@@ -814,6 +844,8 @@ const ro: TranslationKeys = {
   close: 'Închide',
   bluetooth: 'Bluetooth',
   unknownDevice: 'Dispozitiv necunoscut',
+  engineTemperature: 'Temp. eșapament',
+  dpfTemperature: 'Temp. DPF',
 };
 
 export const translations: Record<Language, TranslationKeys> = {

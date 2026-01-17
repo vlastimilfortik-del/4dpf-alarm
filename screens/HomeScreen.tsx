@@ -409,6 +409,36 @@ export default function HomeScreen() {
           </View>
         </Card>
 
+        {isMonitoring && dpfData ? (
+          <Card elevation={1} style={styles.temperatureCard}>
+            <View style={styles.temperatureRow}>
+              <View style={styles.temperatureItem}>
+                <Feather name="thermometer" size={18} color={Colors.dark.primary} />
+                <ThemedText type="small" color="secondary" style={styles.tempLabel}>
+                  {t('engineTemperature')}
+                </ThemedText>
+                <ThemedText type="body" style={styles.tempValue}>
+                  {dpfData.exhaustTemperature !== null 
+                    ? `${Math.round(dpfData.exhaustTemperature)}°C`
+                    : '--'}
+                </ThemedText>
+              </View>
+              <View style={styles.temperatureDivider} />
+              <View style={styles.temperatureItem}>
+                <Feather name="activity" size={18} color={Colors.dark.primary} />
+                <ThemedText type="small" color="secondary" style={styles.tempLabel}>
+                  {t('dpfTemperature')}
+                </ThemedText>
+                <ThemedText type="body" style={styles.tempValue}>
+                  {dpfData.dpfTemperature !== null 
+                    ? `${Math.round(dpfData.dpfTemperature)}°C`
+                    : '--'}
+                </ThemedText>
+              </View>
+            </View>
+          </Card>
+        ) : null}
+
         {isRegenerating ? (
           <View style={styles.regenStatus}>
             <Feather name="zap" size={24} color={Colors.dark.alertRed} />
@@ -516,6 +546,34 @@ const styles = StyleSheet.create({
   },
   statusCard: {
     marginBottom: Spacing.lg,
+  },
+  temperatureCard: {
+    marginBottom: Spacing.lg,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+  },
+  temperatureRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  temperatureItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  temperatureDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: Colors.dark.border,
+  },
+  tempLabel: {
+    marginTop: Spacing.xs,
+    textAlign: "center",
+  },
+  tempValue: {
+    marginTop: Spacing.xs,
+    fontWeight: "600",
+    fontSize: 18,
   },
   statusContent: {
     alignItems: "center",
