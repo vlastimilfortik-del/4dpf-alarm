@@ -141,12 +141,32 @@ For older vehicles that don't send regeneration status byte:
 - **DO NOT CHANGE** after initial EAS build
 
 ## Recent Changes (Jan 2025)
+- **Native Android Background Service**: Full autonomous operation with native foreground service
+- **BluetoothConnectionReceiver**: Auto-detects OBD adapter connection and starts monitoring
+- **BootReceiver**: Auto-start after phone reboot for true "set and forget"
+- **DPFAlarmModule**: React Native bridge for native Android functionality
 - **Background Monitoring**: Added expo-background-fetch and expo-task-manager for true background operation
 - **Engine Temperature Display**: Shows exhaust temp and DPF temp during monitoring for data validation
 - **Push Notifications**: expo-notifications with custom sound for DPF regeneration alerts
 - **Auto-Reconnect**: Automatically reconnects to remembered OBD device when app resumes
 - **Keep Awake**: Screen stays on during active monitoring (useKeepAwake)
 - **Improved Notification Logic**: Persistent notification only in background mode, dismissed in foreground
+
+## Native Android Integration (Bare Workflow)
+The `android-native/` folder contains native Java files for fully autonomous operation:
+- `BluetoothConnectionReceiver.java` - Detects OBD adapter Bluetooth connections
+- `DPFMonitorService.java` - Foreground service for background monitoring
+- `BootReceiver.java` - Auto-start after phone reboot
+- `DPFAlarmModule.java` - React Native bridge module
+- `DPFAlarmPackage.java` - Package registration
+- `INTEGRATION_GUIDE.md` - Step-by-step integration instructions
+
+### To integrate:
+1. Run `npx expo prebuild --platform android`
+2. Copy Java files to `android/app/src/main/java/com/vagdiagnostics/app/`
+3. Update `AndroidManifest.xml` with receivers and service
+4. Register `DPFAlarmPackage` in `MainApplication.kt`
+5. Build with `npx eas build --platform android --profile preview`
 
 ## Previous Changes (Dec 2024)
 - Implemented real Bluetooth OBD-II communication stack
