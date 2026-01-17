@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { View, StyleSheet, Platform, Pressable, Alert, Modal, FlatList } from "react-native";
+import { View, StyleSheet, Platform, Pressable, Alert, Modal, FlatList, AppState } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useKeepAwake } from "expo-keep-awake";
 import { Device } from "react-native-ble-plx";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -36,6 +37,8 @@ export default function HomeScreen() {
   const [dpfData, setDpfData] = useState<DPFData | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   
+  useKeepAwake();
+  
   const { t } = useTranslation();
   
   const soundPlayedRef = useRef(false);
@@ -65,6 +68,7 @@ export default function HomeScreen() {
   }, [loadSettings]);
 
   useEffect(() => {
+    dpfMonitor.initializeAppStateListener();
     dpfMonitor.setCallbacks({
       onStateChange: (state: MonitoringState) => {
         setMonitoringState(state);
@@ -93,6 +97,11 @@ export default function HomeScreen() {
           playDPFAlertSound();
           soundPlayedRef.current = true;
         }
+        
+        dpfMonitor.sendRegenerationNotification(
+          tRef.current('activeRegeneration'),
+          tRef.current('doNotTurnOffEngine')
+        );
         
         triggerHaptic('warning');
       },

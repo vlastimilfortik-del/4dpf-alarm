@@ -1,7 +1,9 @@
+import { AppState, AppStateStatus } from 'react-native';
 import bleManager, { ConnectionState } from '../bluetooth/BleManager';
 import elm327 from './ELM327';
 import vagProtocol, { DPFData } from './VAGProtocol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import notificationService from '../NotificationService';
 
 export type MonitoringState = 'idle' | 'connecting' | 'initializing' | 'monitoring' | 'error';
 
@@ -17,6 +19,7 @@ export type DPFMonitorCallback = {
 
 const POLLING_INTERVAL = 2000;
 const LAST_DEVICE_KEY = '@dpf_last_device_id';
+const AUTO_RECONNECT_KEY = '@dpf_auto_reconnect';
 
 class DPFMonitorService {
   private callbacks: DPFMonitorCallback = {};
@@ -25,6 +28,9 @@ class DPFMonitorService {
   private wasRegenerating: boolean = false;
   private lastConnectedDeviceId: string | null = null;
   private scanTimeout: NodeJS.Timeout | null = null;
+  private appStateSubscription: any = null;
+  private shouldAutoReconnect: boolean = false;
+  private wasMonitoringBeforeBackground: boolean = false;
 
   setCallbacks(callbacks: DPFMonitorCallback) {
     this.callbacks = callbacks;
@@ -211,8 +217,90 @@ class DPFMonitorService {
     return vagProtocol.getLastDPFData();
   }
 
+  initializeAppStateListener(): void {
+    if (this.appStateSubscription) return;
+
+    this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange.bind(this));
+  }
+
+  private async handleAppStateChange(nextAppState: AppStateStatus): Promise<void> {
+    if (nextAppState === 'active') {
+      if (this.wasMonitoringBeforeBackground && !bleManager.isConnected()) {
+        await this.tryAutoReconnect();
+      }
+    } else if (nextAppState === 'background') {
+      this.wasMonitoringBeforeBackground = this.monitoringState === 'monitoring';
+      
+      if (this.wasRegenerating) {
+        await notificationService.showDPFAlert(
+          'DPF REGENERATION ACTIVE',
+          'Do not turn off the engine!'
+        );
+      }
+      
+      if (this.monitoringState === 'monitoring') {
+        await notificationService.showPersistentNotification(
+          '4 DPF Alarm',
+          'Monitoring DPF in background...'
+        );
+      }
+    }
+  }
+
+  private async tryAutoReconnect(): Promise<void> {
+    const lastDeviceId = await this.loadLastDeviceId();
+    if (!lastDeviceId) return;
+
+    this.setState('connecting');
+    
+    await bleManager.startScan();
+    
+    const reconnectTimeout = setTimeout(() => {
+      if (!bleManager.isConnected()) {
+        this.setState('idle');
+        bleManager.stopScan();
+      }
+    }, 15000);
+  }
+
+  async enableAutoReconnect(enabled: boolean): Promise<void> {
+    this.shouldAutoReconnect = enabled;
+    try {
+      await AsyncStorage.setItem(AUTO_RECONNECT_KEY, JSON.stringify(enabled));
+    } catch (error) {
+      console.warn('Failed to save auto-reconnect setting:', error);
+    }
+  }
+
+  async loadAutoReconnectSetting(): Promise<boolean> {
+    try {
+      const value = await AsyncStorage.getItem(AUTO_RECONNECT_KEY);
+      this.shouldAutoReconnect = value ? JSON.parse(value) : true;
+      return this.shouldAutoReconnect;
+    } catch (error) {
+      return true;
+    }
+  }
+
+  async sendRegenerationNotification(title: string, body: string): Promise<void> {
+    await notificationService.showDPFAlert(title, body);
+  }
+
+  async showMonitoringNotification(title: string, body: string): Promise<void> {
+    await notificationService.showPersistentNotification(title, body);
+  }
+
+  async dismissMonitoringNotification(): Promise<void> {
+    await notificationService.dismissPersistentNotification();
+  }
+
   destroy(): void {
     this.stopMonitoring();
+    if (this.appStateSubscription) {
+      this.appStateSubscription.remove();
+      this.appStateSubscription = null;
+    }
+    notificationService.dismissAllNotifications();
     bleManager.destroy();
   }
 }
