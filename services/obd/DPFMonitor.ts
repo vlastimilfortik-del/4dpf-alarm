@@ -46,8 +46,13 @@ class DPFMonitorService {
           }
         }
       },
-      onDeviceFound: (device: any) => {
+      onDeviceFound: async (device: any) => {
         this.callbacks.onDeviceFound?.(device);
+        
+        if (this.shouldAutoReconnect && this.lastConnectedDeviceId === device.id) {
+          console.log('[DPFMonitor] Auto-connecting to last device:', device.name);
+          await this.connectToDevice(device);
+        }
       },
       onError: (error: string) => {
         this.callbacks.onError?.(error);
@@ -60,12 +65,16 @@ class DPFMonitorService {
       clearTimeout(this.scanTimeout);
     }
     
+    await this.loadAutoReconnectSetting();
+    this.lastConnectedDeviceId = await this.loadLastDeviceId();
+    
     this.setState('connecting');
     await bleManager.startScan();
     
     this.scanTimeout = setTimeout(() => {
       if (this.monitoringState === 'connecting' && !bleManager.isConnected()) {
         this.setState('idle');
+        bleManager.stopScan();
       }
     }, 12000);
   }
@@ -270,9 +279,10 @@ class DPFMonitorService {
   async loadAutoReconnectSetting(): Promise<boolean> {
     try {
       const value = await AsyncStorage.getItem(AUTO_RECONNECT_KEY);
-      this.shouldAutoReconnect = value ? JSON.parse(value) : true;
+      this.shouldAutoReconnect = value !== null ? JSON.parse(value) : true;
       return this.shouldAutoReconnect;
     } catch (error) {
+      this.shouldAutoReconnect = true;
       return true;
     }
   }

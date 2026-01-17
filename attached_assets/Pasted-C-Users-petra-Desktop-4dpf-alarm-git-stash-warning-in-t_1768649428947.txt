@@ -1,0 +1,50 @@
+C:\Users\petra\Desktop\4dpf-alarm>git stash
+warning: in the working copy of 'app.json', LF will be replaced by CRLF the next time Git touches it
+Saved working directory and index state WIP on main: 8ba5b19 Complete i18n implementation (Czech, English, German) with TEST button and Settings screen
+
+C:\Users\petra\Desktop\4dpf-alarm>git pull origin main
+From https://github.com/vlastimilfortik-del/4dpf-alarm
+ * branch            main       -> FETCH_HEAD
+Updating 8ba5b19..763c6b1
+Fast-forward
+ .upm/store.json                                    |   2 +-
+ android-native/AndroidManifest-additions.xml       |  49 +++
+ android-native/INTEGRATION_GUIDE.md                | 213 +++++++++++
+ .../app/BluetoothConnectionReceiver.java           |  64 ++++
+ .../java/com/vagdiagnostics/app/BootReceiver.java  |  66 ++++
+ .../com/vagdiagnostics/app/DPFAlarmModule.java     | 140 ++++++++
+ .../com/vagdiagnostics/app/DPFAlarmPackage.java    |  25 ++
+ .../com/vagdiagnostics/app/DPFMonitorService.java  | 142 ++++++++
+ android-native/setup-native.ps1                    |  52 +++
+ app.json                                           |  18 +-
+ i18n/translations.ts                               |  32 ++
+ package-lock.json                                  | 394 +++++++++++++++++----
+ package.json                                       |   3 +
+ replit.md                                          |  30 +-
+ screens/HomeScreen.tsx                             |  69 +++-
+ services/BackgroundService.ts                      | 167 +++++++++
+ services/NativeBackgroundService.ts                | 109 ++++++
+ services/NotificationService.ts                    | 118 ++++++
+ services/obd/DPFMonitor.ts                         |  83 +++++
+ 19 files changed, 1700 insertions(+), 76 deletions(-)
+ create mode 100644 android-native/AndroidManifest-additions.xml
+ create mode 100644 android-native/INTEGRATION_GUIDE.md
+ create mode 100644 android-native/java/com/vagdiagnostics/app/BluetoothConnectionReceiver.java
+ create mode 100644 android-native/java/com/vagdiagnostics/app/BootReceiver.java
+ create mode 100644 android-native/java/com/vagdiagnostics/app/DPFAlarmModule.java
+ create mode 100644 android-native/java/com/vagdiagnostics/app/DPFAlarmPackage.java
+ create mode 100644 android-native/java/com/vagdiagnostics/app/DPFMonitorService.java
+ create mode 100644 android-native/setup-native.ps1
+ create mode 100644 services/BackgroundService.ts
+ create mode 100644 services/NativeBackgroundService.ts
+ create mode 100644 services/NotificationService.ts
+
+C:\Users\petra\Desktop\4dpf-alarm>copy android-native\java\com\vagdiagnostics\app\*.java android\app\src\main\java\com\vagdiagnostics\app\
+android-native\java\com\vagdiagnostics\app\BluetoothConnectionReceiver.java
+android-native\java\com\vagdiagnostics\app\BootReceiver.java
+android-native\java\com\vagdiagnostics\app\DPFAlarmModule.java
+android-native\java\com\vagdiagnostics\app\DPFAlarmPackage.java
+android-native\java\com\vagdiagnostics\app\DPFMonitorService.java
+        5 file(s) copied.
+
+C:\Users\petra\Desktop\4dpf-alarm>

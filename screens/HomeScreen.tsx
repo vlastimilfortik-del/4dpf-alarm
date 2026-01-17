@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { View, StyleSheet, Platform, Pressable, Alert, Modal, FlatList, AppState } from "react-native";
+import { View, StyleSheet, Platform, Pressable, Alert, Modal, FlatList, AppState, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import * as Notifications from "expo-notifications";
 import { useKeepAwake } from "expo-keep-awake";
 import { Device } from "react-native-ble-plx";
 
@@ -65,7 +66,29 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadSettings();
+    requestPermissions();
+    tryAutoReconnectOnStart();
   }, [loadSettings]);
+
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const { status } = await Notifications.requestPermissionsAsync();
+        console.log('Notification permission:', status);
+      } catch (error) {
+        console.log('Failed to request notification permission:', error);
+      }
+    }
+  };
+
+  const tryAutoReconnectOnStart = async () => {
+    const lastDeviceId = await dpfMonitor.loadLastDeviceId();
+    if (lastDeviceId && !dpfMonitor.isConnected()) {
+      console.log('Auto-reconnecting to last device:', lastDeviceId);
+      setMonitoringState('connecting');
+      await dpfMonitor.scanForDevices();
+    }
+  };
 
   useEffect(() => {
     dpfMonitor.initializeAppStateListener();
