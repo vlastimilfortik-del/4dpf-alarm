@@ -78,7 +78,41 @@ export default function HomeScreen() {
       } catch (error) {
         console.log('Failed to request notification permission:', error);
       }
+      
+      const overlayAsked = await storage.getOverlayPermissionAsked();
+      if (!overlayAsked) {
+        setTimeout(() => {
+          showOverlayPermissionDialog();
+        }, 1500);
+      }
     }
+  };
+
+  const showOverlayPermissionDialog = () => {
+    Alert.alert(
+      'Oprávnění pro zobrazení přes jiné aplikace',
+      'Pro správné zobrazení upozornění na regeneraci DPF je potřeba povolit zobrazení přes jiné aplikace.\n\nChcete otevřít nastavení?',
+      [
+        {
+          text: 'Později',
+          style: 'cancel',
+          onPress: async () => {
+            await storage.setOverlayPermissionAsked(true);
+          },
+        },
+        {
+          text: 'Otevřít nastavení',
+          onPress: async () => {
+            await storage.setOverlayPermissionAsked(true);
+            try {
+              Linking.openSettings();
+            } catch (error) {
+              console.log('Failed to open settings:', error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const tryAutoReconnectOnStart = async () => {

@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   DPF_HISTORY: "@vag_diagnostics/dpf_history",
   BLUETOOTH_DEVICES: "@vag_diagnostics/bluetooth_devices",
   LANGUAGE: "@vag_diagnostics/language",
+  OVERLAY_PERMISSION_ASKED: "@vag_diagnostics/overlay_permission_asked",
 } as const;
 
 export interface DPFHistoryEntry {
@@ -167,6 +168,23 @@ export const storage = {
       await AsyncStorage.setItem(STORAGE_KEYS.LANGUAGE, language);
     } catch (error) {
       console.error("Failed to save language:", error);
+    }
+  },
+
+  async getOverlayPermissionAsked(): Promise<boolean> {
+    try {
+      const value = await AsyncStorage.getItem(STORAGE_KEYS.OVERLAY_PERMISSION_ASKED);
+      return value === "true";
+    } catch {
+      return false;
+    }
+  },
+
+  async setOverlayPermissionAsked(asked: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.OVERLAY_PERMISSION_ASKED, String(asked));
+    } catch (error) {
+      console.error("Failed to save overlay permission status:", error);
     }
   },
 };
