@@ -140,7 +140,15 @@ For older vehicles that don't send regeneration status byte:
 - Android: com.vagdiagnostics.app
 - **DO NOT CHANGE** after initial EAS build
 
-## Recent Changes (Dec 2024)
+## Recent Changes (Jan 2025)
+- **Background Monitoring**: Added expo-background-fetch and expo-task-manager for true background operation
+- **Engine Temperature Display**: Shows exhaust temp and DPF temp during monitoring for data validation
+- **Push Notifications**: expo-notifications with custom sound for DPF regeneration alerts
+- **Auto-Reconnect**: Automatically reconnects to remembered OBD device when app resumes
+- **Keep Awake**: Screen stays on during active monitoring (useKeepAwake)
+- **Improved Notification Logic**: Persistent notification only in background mode, dismissed in foreground
+
+## Previous Changes (Dec 2024)
 - Implemented real Bluetooth OBD-II communication stack
 - Added device scanning modal with OBD adapter detection
 - Connection status card now turns blue when connected
